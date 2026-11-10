@@ -1378,3 +1378,34 @@ button.activity-row:hover { background: #f7faf5; }
   outline: 3px solid rgba(66, 133, 244, .25);
   outline-offset: 2px;
 }
+
+
+.folio-404 { min-height: 100vh; position: relative; display: grid; place-items: center; overflow: hidden; padding: 34px; background: #f7fbf4; color: #29382f; }
+.folio-404__glow { position: absolute; border-radius: 50%; filter: blur(2px); pointer-events: none; }
+.folio-404__glow--one { width: 430px; height: 430px; top: -210px; left: -150px; background: rgba(191,235,184,.45); }
+.folio-404__glow--two { width: 520px; height: 520px; right: -260px; bottom: -300px; background: rgba(206,242,194,.55); }
+.folio-404__card { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(300px,.9fr) minmax(390px,1.1fr); width: min(1120px,100%); min-height: 560px; overflow: hidden; border: 1px solid rgba(151,190,150,.28); border-radius: 28px; background: rgba(255,255,253,.78); box-shadow: 0 28px 80px rgba(64,111,73,.12); backdrop-filter: blur(12px); }
+.folio-404__copy { display: flex; flex-direction: column; justify-content: center; padding: 62px 52px; }
+.folio-404__brand { display: flex; align-items: center; gap: 9px; margin-bottom: 66px; color: #304638; font-size: 21px; font-weight: 750; letter-spacing: -.06em; }
+.folio-404__brand > span:last-child > span { color: #7daa7c; }
+.folio-404__mark { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; color: #f5fff3; background: #496e54; font-size: 15px; transform: rotate(-8deg); }
+.folio-404__eyebrow { margin: 0 0 14px; color: #6f9a74; font-size: 10px; font-weight: 750; letter-spacing: .16em; }
+.folio-404 h1 { margin: 0; color: #27392e; font-family: Georgia,serif; font-size: clamp(48px,6vw,76px); font-weight: 400; letter-spacing: -.065em; line-height: .96; }
+.folio-404 h1 em { color: #72a374; font-style: italic; }
+.folio-404__lead { max-width: 355px; margin: 22px 0 30px; color: #77877b; font-size: 14px; line-height: 1.65; }
+.folio-404__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.folio-404__primary, .folio-404__secondary { min-height: 43px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 0 18px; border-radius: 999px; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.folio-404__primary { color: #fff; background: #47765a; box-shadow: 0 8px 18px rgba(71,118,90,.2); }
+.folio-404__secondary { border: 1px solid #d4dfd4; color: #52705b; background: rgba(255,255,255,.72); }
+.folio-404__art { min-height: 560px; display: grid; place-items: center; overflow: hidden; background: #eaf7e6; }
+.folio-404__art img { width: 100%; height: 100%; object-fit: cover; object-position: center; mix-blend-mode: multiply; }
+.folio-404__tip { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-top: 18px; color: #719278; font-size: 11px; }
+@media (max-width: 760px) {
+  .folio-404 { padding: 18px; place-items: start center; }
+  .folio-404__card { grid-template-columns: 1fr; margin-top: 12px; border-radius: 22px; }
+  .folio-404__copy { padding: 34px 26px 27px; }
+  .folio-404__brand { margin-bottom: 42px; }
+  .folio-404 h1 { font-size: 54px; }
+  .folio-404__art { min-height: 300px; max-height: 340px; }
+  .folio-404__tip { margin-bottom: 14px; }
+}
