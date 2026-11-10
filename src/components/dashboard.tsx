@@ -580,6 +580,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const [sessionReady] = useState(true);
   const [view, setView] = useState<ViewName>("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -810,10 +811,10 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const openCount = data.tasks.filter((task) => task.status !== "done" && (!user || task.assigneeId === user.id)).length;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarCollapsed ? "app-shell--sidebar-collapsed" : ""}`}>
       {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
-      <aside className={`sidebar ${mobileOpen ? "sidebar--open" : ""}`}>
-        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => setMobileOpen(false)} aria-label="Close sidebar"><PanelLeftClose size={17} /></button></div>
+      <aside className={`sidebar ${mobileOpen ? "sidebar--open" : ""} ${sidebarCollapsed ? "sidebar--collapsed" : ""}`}>
+        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { setSidebarCollapsed((value) => !value); setMobileOpen(false); }} aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}><PanelLeftClose size={17} /></button></div>
         <WorkspaceSwitcher id={data.workspace.id} name={data.workspace.name} />
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="nav-section-label">YOUR SPACE</span>
