@@ -1504,6 +1504,24 @@ body { background: linear-gradient(135deg, #f7faf4 0%, #fbfaf5 52%, #f4f8fb 100%
 .metric-card:nth-child(3n+2) { background: linear-gradient(145deg, #fffefa, #f0f5fb); }
 .metric-card:nth-child(3n) { background: linear-gradient(145deg, #fffefa, #fff7e9); }
 .section-kicker h2, .section-title h2 { color: #315c47; }
+
+/* Compact desktop density for shorter laptop/desktop viewports. */
+@media (min-width: 1000px) and (max-height: 850px) {
+  .topbar { height: 52px; padding-left: 28px; padding-right: 28px; }
+  .content-shell { min-height: calc(100vh - 52px); }
+  .content-max { padding: 22px 30px 14px; }
+  .view-stack { gap: 13px; }
+  .welcome-row, .page-heading-row { margin-top: 0; margin-bottom: 0; }
+  .welcome-row h1, .page-heading-row h1 { font-size: 30px; }
+  .panel { padding: 14px; }
+  .home-grid, .dashboard-grid { gap: 12px; }
+  .metric-card { min-height: 104px; padding: 13px; }
+  .calendar-panel { padding: 13px; }
+  .calendar-month-grid .calendar-day { min-height: 106px; padding: 6px; }
+  .calendar-month-grid .calendar-event { padding: 4px 6px; }
+  .calendar-month-grid .calendar-event > span { -webkit-line-clamp: 1; }
+  .app-footer { padding-top: 8px; padding-bottom: 9px; }
+}
 .connector-card__quota-title { display:block; color:#536756; font-size:10px; }
 .connector-card__reconnect { min-height:28px; margin-top:8px; padding:0 10px; font-size:10px; }
 @media (max-width:600px) { .connector-card { align-items:flex-start; flex-wrap:wrap; } .connector-card .button { width:100%; } }
