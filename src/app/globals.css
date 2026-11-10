@@ -1285,8 +1285,8 @@ body { color: var(--ink); font-size: 14px; }
 /* Membership-checked workspace selector and invitations */
 .workspace-switcher-wrap { position: relative; z-index: 12; }
 .workspace-switcher-wrap .workspace-switcher { margin-bottom: 19px; }
-.workspace-menu { position: fixed; left: 270px; top: 90px; width: 260px; right: auto; }
-.sidebar--collapsed .workspace-menu { left: 84px; }
+.workspace-menu { position: fixed !important; left: 270px !important; top: 90px !important; width: 260px !important; right: auto !important; }
+.sidebar--collapsed .workspace-menu { left: 84px !important; }
 .sidebar--collapsed .workspace-switcher-wrap { display: flex; justify-content: center; }
 .sidebar--collapsed .workspace-switcher { width: 50px; height: 50px; justify-content: center; padding: 7px 0; margin-bottom: 19px; }
 .sidebar--collapsed .workspace-monogram { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
