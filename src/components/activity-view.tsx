@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Activity, Building2, CircleCheck, FilePlus2, ListPlus, MessageCircle, Pencil, RotateCcw, Trash2, UserMinus, UserPlus,
+  Activity, Building2, CircleCheck, FilePlus2, ListPlus, MessageCircle, Pencil, RotateCcw, Trash2, UserMinus, UserPlus, HardDrive,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -31,6 +31,7 @@ const META: Record<string, { icon: LucideIcon; tone: string }> = {
   member_joined: { icon: UserPlus, tone: "act--sky" },
   member_removed: { icon: UserMinus, tone: "act--clay" },
   workspace_renamed: { icon: Building2, tone: "act--sky" },
+  drive_connected: { icon: HardDrive, tone: "act--sage" },
 };
 
 function initials(name: string) {
@@ -77,6 +78,7 @@ function phrase(item: ActivityItem) {
     case "member_joined": return <> joined the workspace</>;
     case "member_removed": return <> removed {item.summary ?? "a member"} from the workspace</>;
     case "workspace_renamed": return <> renamed the workspace to{s}</>;
+    case "drive_connected": return <> connected Google Drive{s}</>;
     default: return <> made an update</>;
   }
 }

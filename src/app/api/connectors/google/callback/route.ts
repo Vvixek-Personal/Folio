@@ -5,6 +5,8 @@ import { db } from "@/db";
 import { driveConnections } from "@/db/schema";
 import { getSessionUser, sessionCookieOptions } from "@/lib/auth";
 import { encryptDriveToken } from "@/lib/drive-crypto";
+import { getWorkspaceForUser } from "@/lib/workspace";
+import { recordActivity } from "@/lib/activity";
 
 const STATE = "folio_drive_state";
 export async function GET(request: Request) {
@@ -29,6 +31,8 @@ export async function GET(request: Request) {
     if (!profile?.sub || !profile.email) throw new Error("Drive account identity unavailable.");
     const encrypted = encryptDriveToken(tokens.refresh_token);
     await db.insert(driveConnections).values({ userId: user.id, googleAccountId: profile.sub, email: profile.email.toLowerCase(), refreshTokenEncrypted: encrypted, updatedAt: new Date() }).onConflictDoUpdate({ target: driveConnections.userId, set: { googleAccountId: profile.sub, email: profile.email.toLowerCase(), refreshTokenEncrypted: encrypted, updatedAt: new Date() } });
+    const workspace = await getWorkspaceForUser(user.id);
+    if (workspace) recordActivity({ workspaceId: workspace.id, actorId: user.id, type: "drive_connected", summary: profile.email.toLowerCase(), detail: "Google Drive connected" });
     const response = NextResponse.redirect(new URL("/?connector=drive_connected", request.url));
     response.cookies.set(STATE, "", { ...sessionCookieOptions(request), maxAge: 0 });
     return response;

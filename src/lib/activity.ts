@@ -12,7 +12,8 @@ export type ActivityType =
   | "comment_added"
   | "member_joined"
   | "member_removed"
-  | "workspace_renamed";
+  | "workspace_renamed"
+  | "drive_connected";
 
 export interface ActivityRecord {
   workspaceId: string;
