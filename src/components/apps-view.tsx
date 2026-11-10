@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowRight, Download, FileArchive, FileImage, FileOutput, FileText, LockKeyhole, Merge, Scissors, Sparkles, WandSparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, FileArchive, FileImage, FileOutput, FileText, LockKeyhole, Merge, Scissors, Sparkles, WandSparkles, X } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
 type Tool = { title: string; description: string; icon: typeof FileText; tone: string; ready?: boolean };
@@ -26,6 +26,7 @@ function downloadPdf(bytes: Uint8Array, name: string) { const blob = new Blob([b
 
 export function AppsView() {
   const [active, setActive] = useState<Tool | null>(null);
+  const [opened, setOpened] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,7 +42,12 @@ export function AppsView() {
       setMessage("Done — your file was downloaded. Files stayed in this browser.");
     } catch { setMessage("That file could not be read. Please choose a valid PDF."); } finally { setBusy(false); }
   };
+  if (!opened) return <div className="view-stack apps-view">
+    <div className="apps-hero panel"><div className="apps-hero__orb"><Sparkles size={24} /></div><div><span className="eyebrow">FOLIO APPS</span><h1>Your apps, inside Folio.</h1><p>Open a focused tool without another account or another history. Everything stays in your Folio workspace.</p></div></div>
+    <section className="apps-section"><div className="apps-section__heading"><div><span className="eyebrow">CONNECTED APPS</span><h2>Available in your workspace</h2></div><span>1 app</span></div><button className="app-launch-card" onClick={() => setOpened(true)}><span className="app-launch-card__logo">i<span>♥</span>PDF</span><span className="app-launch-card__copy"><strong>I Love PDF</strong><small>Merge, split, compress, organize and transform PDFs.</small><em>Runs privately inside Folio · no separate sign-in</em></span><ArrowRight size={19} /></button></section>
+  </div>;
   return <div className="view-stack apps-view">
+    <button className="apps-back-button" onClick={() => setOpened(false)}><ArrowLeft size={15} /> All apps</button>
     <div className="apps-hero panel"><div className="apps-hero__orb"><Sparkles size={24} /></div><div><span className="eyebrow">FOLIO APPS</span><h1>Small tools for the work in front of you.</h1><p>Private PDF tools inside Folio. No second account and no upload—the first tools process files in your browser.</p></div><div className="apps-hero__meta"><strong>PDF Studio</strong><span>Built for Folio · no extra sign-in</span></div></div>
     {tools.map((section) => <section className="apps-section" key={section.group}><div className="apps-section__heading"><div><span className="eyebrow">TOOLKIT</span><h2>{section.group}</h2></div><span>{section.tools.length} tools</span></div><div className="apps-grid">{section.tools.map((tool) => { const Icon = tool.icon; return <button className="app-tool-card" key={tool.title} onClick={() => tool.ready ? (setActive(tool), setMessage("")) : undefined} disabled={!tool.ready}><span className={"app-tool-card__icon app-tool-card__icon--" + tool.tone}><Icon size={21} /></span><span className="app-tool-card__copy"><strong>{tool.title}</strong><small>{tool.description}</small></span><span className="app-tool-card__state">{tool.ready ? "Ready" : "Coming soon"}</span><ArrowRight size={16} /></button>; })}</div></section>)}
     <div className="apps-note"><Sparkles size={16} /><span><strong>Your Folio session is shared.</strong> Tool activity will stay with Folio when history is connected.</span></div>
