@@ -9,7 +9,7 @@ const tools: { group: string; tools: Tool[] }[] = [
   { group: "Organize PDF", tools: [
     { title: "Merge PDF", description: "Combine multiple files into one clean PDF.", icon: Merge, tone: "violet", ready: true },
     { title: "Split PDF", description: "Extract pages or divide a document into parts.", icon: Scissors, tone: "orange", ready: true },
-    { title: "Organize PDF", description: "Reorder, rotate, and remove pages with ease.", icon: FileArchive, tone: "blue" },
+    { title: "Organize PDF", description: "Reorder, rotate, and remove pages with ease.", icon: FileArchive, tone: "blue", ready: true },
   ] },
   { group: "Convert & optimize", tools: [
     { title: "Compress PDF", description: "Make PDFs smaller while keeping them readable.", icon: FileOutput, tone: "green", ready: true },
@@ -36,6 +36,7 @@ export function AppsView() {
       const selected = Array.from(files); const docs = await Promise.all(selected.map((file) => file.arrayBuffer().then((bytes) => PDFDocument.load(bytes))));
       if (active.title === "Merge PDF") { const out = await PDFDocument.create(); for (const doc of docs) { const pages = await out.copyPages(doc, doc.getPageIndices()); pages.forEach((page) => out.addPage(page)); } downloadPdf(await out.save({ useObjectStreams: true }), "folio-merged.pdf"); }
       else if (active.title === "Split PDF") { const doc = docs[0]; const out = await PDFDocument.create(); const page = (await out.copyPages(doc, [0]))[0]; out.addPage(page); downloadPdf(await out.save({ useObjectStreams: true }), selected[0].name.replace(/\.pdf$/i, "") + "-page-1.pdf"); }
+      else if (active.title === "Organize PDF") { const doc = docs[0]; const out = await PDFDocument.create(); const pages = await out.copyPages(doc, doc.getPageIndices()); pages.reverse().forEach((page) => out.addPage(page)); downloadPdf(await out.save({ useObjectStreams: true }), selected[0].name.replace(/\.pdf$/i, "") + "-organized.pdf"); }
       else { downloadPdf(await docs[0].save({ useObjectStreams: true }), selected[0].name.replace(/\.pdf$/i, "") + "-compressed.pdf"); }
       setMessage("Done — your file was downloaded. Files stayed in this browser.");
     } catch { setMessage("That file could not be read. Please choose a valid PDF."); } finally { setBusy(false); }
