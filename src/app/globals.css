@@ -1475,6 +1475,22 @@ button.activity-row:hover { background: #f7faf5; }
 .connector-metric--green > span { color:#3d9b68; background:#e7f5eb; }
 .connector-metric--gold > span { color:#c58d27; background:#fff4d8; }
 @media (max-width:600px) { .connector-dashboard__heading { flex-direction:column; gap:8px; } .connector-metrics { grid-template-columns:1fr; } .connector-card__summary { align-items:flex-start; width:100%; margin-left:52px; } }
+
+/* Brighter Folio palette: more colour, still calm and readable. */
+body { background: linear-gradient(135deg, #f7faf4 0%, #fbfaf5 52%, #f4f8fb 100%); }
+.sidebar { background: linear-gradient(180deg, #f7fbf4 0%, #fbfbf8 70%); border-right-color: #dfe9df; }
+.nav-button--active { color: #244c3a; background: linear-gradient(90deg, #e0f1e5, #eaf3e9); box-shadow: inset 3px 0 0 #5aa574; }
+.nav-button--active > svg { color: #2f9660; }
+.nav-button:hover { background: #edf6ef; color: #2d5842; }
+.topbar { border-bottom-color: #dfe9e0; background: rgba(255,255,252,.94); }
+.topbar-current { color: #2f6349; }
+.button--primary { background: linear-gradient(135deg, #438b62, #5a789d); box-shadow: 0 6px 14px rgba(67,139,98,.18); }
+.button--primary:hover:not(:disabled) { background: linear-gradient(135deg, #367951, #4c688a); }
+.panel { border-color: #dfeadf; box-shadow: 0 8px 24px rgba(63,104,77,.055); }
+.metric-card:nth-child(3n+1) { background: linear-gradient(145deg, #fffefa, #f1f8ee); }
+.metric-card:nth-child(3n+2) { background: linear-gradient(145deg, #fffefa, #f0f5fb); }
+.metric-card:nth-child(3n) { background: linear-gradient(145deg, #fffefa, #fff7e9); }
+.section-kicker h2, .section-title h2 { color: #315c47; }
 .connector-card__quota-title { display:block; color:#536756; font-size:10px; }
 .connector-card__reconnect { min-height:28px; margin-top:8px; padding:0 10px; font-size:10px; }
 @media (max-width:600px) { .connector-card { align-items:flex-start; flex-wrap:wrap; } .connector-card .button { width:100%; } }
