@@ -1454,6 +1454,27 @@ button.activity-row:hover { background: #f7faf5; }
 .connector-card__meter { height:7px; margin:8px 0 6px; overflow:hidden; border-radius:99px; background:#edf1e9; }
 .connector-card__meter span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#74b483,#4285f4); }
 .connector-card__quota em { display:block; margin-top:7px; color:#ad7f5d; font-size:9px; font-style:normal; }
+.connector-card__summary { display:flex; flex-direction:column; align-items:flex-end; gap:2px; margin-left:auto; color:#8b968c; font-size:10px; }
+.connector-card__summary strong { color:#536756; font-size:14px; }
+.connector-card--connected { cursor:pointer; transition: border-color .16s, box-shadow .16s; }
+.connector-card--connected:hover, .connector-card--expanded { border-color:#cbdcc9; box-shadow:0 10px 30px rgba(76,113,80,.08); }
+.connector-dashboard { max-width:680px; padding:22px; border:1px solid #e8eee4; border-radius:16px; background:linear-gradient(145deg,#fff,#f8fbf6); }
+.connector-dashboard__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
+.connector-dashboard__heading h2 { margin:0; color:#435246; font-size:19px; }
+.connector-dashboard__heading p:not(.eyebrow) { margin:5px 0 0; color:#8b968c; font-size:11px; }
+.connector-dashboard__total { color:#536756; font-size:12px; font-weight:700; }
+.connector-dashboard__meter { height:10px; margin-top:22px; overflow:hidden; border-radius:99px; background:#edf1e9; }
+.connector-dashboard__meter span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#4b8ee8,#6eb47d); }
+.connector-dashboard__meter-labels { display:flex; justify-content:space-between; margin-top:7px; color:#849184; font-size:10px; }
+.connector-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+.connector-metric { min-height:112px; padding:13px; border-radius:13px; background:#f4f8f2; }
+.connector-metric > span { width:28px; height:28px; display:grid; place-items:center; margin-bottom:12px; border-radius:9px; }
+.connector-metric small, .connector-metric em { display:block; color:#8a968b; font-size:10px; font-style:normal; }
+.connector-metric strong { display:block; margin:3px 0; color:#485a4c; font-size:16px; }
+.connector-metric--blue > span { color:#4285f4; background:#e8f0fe; }
+.connector-metric--green > span { color:#3d9b68; background:#e7f5eb; }
+.connector-metric--gold > span { color:#c58d27; background:#fff4d8; }
+@media (max-width:600px) { .connector-dashboard__heading { flex-direction:column; gap:8px; } .connector-metrics { grid-template-columns:1fr; } .connector-card__summary { align-items:flex-start; width:100%; margin-left:52px; } }
 .connector-card__quota-title { display:block; color:#536756; font-size:10px; }
 .connector-card__reconnect { min-height:28px; margin-top:8px; padding:0 10px; font-size:10px; }
 @media (max-width:600px) { .connector-card { align-items:flex-start; flex-wrap:wrap; } .connector-card .button { width:100%; } }
