@@ -382,23 +382,24 @@ function ProjectsView({ tasks, onOpen, onCreate }: { tasks: WorkspaceTask[]; onO
 }
 
 function CalendarView({ tasks, timezone, onOpen, onCreate }: { tasks: WorkspaceTask[]; timezone: string; onOpen: (task: WorkspaceTask) => void; onCreate: () => void }) {
-  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
   const days = useMemo(() => {
     const todayParts = dateKey(new Date(), timezone).split("-").map(Number);
-    const start = new Date(Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2]));
-    start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7) + weekOffset * 7);
-    return Array.from({ length: 7 }, (_, index) => {
+    const monthStart = new Date(Date.UTC(todayParts[0], todayParts[1] - 1 + monthOffset, 1));
+    const start = new Date(monthStart);
+    start.setUTCDate(1 - ((start.getUTCDay() + 6) % 7));
+    return Array.from({ length: 42 }, (_, index) => {
       const day = new Date(start);
       day.setUTCDate(start.getUTCDate() + index);
       const key = day.toISOString().slice(0, 10);
-      return { key, date: day, label: new Intl.DateTimeFormat("en-IN", { weekday: "short", timeZone: "UTC" }).format(day), number: new Intl.DateTimeFormat("en-IN", { day: "numeric", timeZone: "UTC" }).format(day) };
+      return { key, date: day, label: new Intl.DateTimeFormat("en-IN", { weekday: "short", timeZone: "UTC" }).format(day), number: new Intl.DateTimeFormat("en-IN", { day: "numeric", timeZone: "UTC" }).format(day), inMonth: day.getUTCMonth() === monthStart.getUTCMonth() };
     });
-  }, [timezone, weekOffset]);
-  const title = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "UTC" }).format(days[0].date);
+  }, [timezone, monthOffset]);
+  const title = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "UTC" }).format(days[20].date);
   const scheduled = tasks.filter((task) => task.dueDate);
   return <div className="view-stack"><div className="page-heading-row"><div><p className="eyebrow"><span className="eyebrow-dot eyebrow-dot--blue" /> THE WEEK, AT A GLANCE</p><h1>Calendar</h1><p className="welcome-subtitle">A little perspective on what’s coming up.</p></div><button className="button button--primary" onClick={onCreate}><Plus size={17} /> New task</button></div>
-    <section className="panel calendar-panel"><div className="calendar-toolbar"><div><h2>{title}</h2><p>Week of {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "UTC" }).format(days[0].date)}</p></div><div className="calendar-controls"><button className="button button--secondary button--small" onClick={() => setWeekOffset(0)}>Today</button><button className="icon-button" onClick={() => setWeekOffset((value) => value - 1)} aria-label="Previous week"><ChevronLeft size={17} /></button><button className="icon-button" onClick={() => setWeekOffset((value) => value + 1)} aria-label="Next week"><ChevronRight size={17} /></button></div></div>
-      <div className="calendar-week-grid">{days.map((day) => <div className={`calendar-day ${day.key === dateKey(new Date(), timezone) ? "calendar-day--today" : ""}`} key={day.key}><div className="calendar-day__heading"><span>{day.label}</span><strong>{day.number}</strong></div><div className="calendar-day__events">{tasks.filter((task) => task.dueDate === day.key).map((task) => <button className={`calendar-event calendar-event--${task.status}`} key={task.id} onClick={() => onOpen(task)}><span>{task.title}</span><small>{task.project}</small></button>)}</div></div>)}</div>
+    <section className="panel calendar-panel"><div className="calendar-toolbar"><div><p className="calendar-view-label">MONTH VIEW</p><h2>{title}</h2><p>{scheduled.length} scheduled {scheduled.length === 1 ? "task" : "tasks"} across all projects</p></div><div className="calendar-controls"><button className="button button--secondary button--small" onClick={() => setMonthOffset(0)}>Today</button><button className="icon-button" onClick={() => setMonthOffset((value) => value - 1)} aria-label="Previous month"><ChevronLeft size={17} /></button><button className="icon-button" onClick={() => setMonthOffset((value) => value + 1)} aria-label="Next month"><ChevronRight size={17} /></button></div></div>
+      <div className="calendar-month-grid">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => <div className="calendar-weekday" key={label}>{label}</div>)}{days.map((day) => <div className={`calendar-day ${day.inMonth ? "" : "calendar-day--outside"} ${day.key === dateKey(new Date(), timezone) ? "calendar-day--today" : ""}`} key={day.key}><div className="calendar-day__heading"><span>{day.number}</span>{day.key === dateKey(new Date(), timezone) && <b>Today</b>}</div><div className="calendar-day__events">{tasks.filter((task) => task.dueDate === day.key).map((task) => <button className={`calendar-event calendar-event--${task.status}`} key={task.id} onClick={() => onOpen(task)}><span>{task.title}</span><small>{task.project}</small></button>)}</div></div>)}</div>
       {!scheduled.length && <div className="calendar-empty"><CalendarDays size={18} /><span>No due dates on the calendar yet.</span><button className="text-button" onClick={onCreate}>Add a task</button></div>}
     </section>
     <div className="calendar-footnote"><span><Globe2 size={15} /> Calendar uses <strong>{timezone}</strong></span><span>{scheduled.length} scheduled {scheduled.length === 1 ? "task" : "tasks"} across all projects</span></div>

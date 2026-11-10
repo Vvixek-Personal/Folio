@@ -409,6 +409,18 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .calendar-toolbar p { margin: 4px 0 0; color: #9a9e96; font-size: 9px; }
 .calendar-controls { display: flex; align-items: center; gap: 4px; }
 .calendar-week-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); border: 1px solid #edede8; border-radius: 9px; overflow: hidden; }
+.calendar-view-label { margin:0 0 4px !important; color:#72917a !important; font-size:9px !important; font-weight:700; letter-spacing:.12em; }
+.calendar-month-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); border:1px solid #e4ebe2; border-radius:12px; overflow:hidden; background:#e4ebe2; gap:1px; }
+.calendar-weekday { min-height:30px; display:flex; align-items:center; padding:0 11px; color:#829183; background:#f5f8f3; font-size:10px; font-weight:700; letter-spacing:.04em; }
+.calendar-month-grid .calendar-day { min-height:132px; padding:8px; border:0; background:#fffefa; }
+.calendar-month-grid .calendar-day--outside { background:#f8faf7; }
+.calendar-month-grid .calendar-day--outside .calendar-day__heading > span { color:#b8c0b8; }
+.calendar-month-grid .calendar-day--today { background:#f1f8f0; box-shadow:inset 0 0 0 1px #a8cbae; }
+.calendar-month-grid .calendar-day__heading { min-height:22px; flex-direction:row; justify-content:space-between; align-items:center; border:0; color:#667568; font-size:11px; font-weight:650; }
+.calendar-month-grid .calendar-day__heading strong { display:none; }
+.calendar-day__heading b { padding:2px 5px; border-radius:5px; color:#4b8b5a; background:#dff0df; font-size:8px; font-weight:700; }
+.calendar-month-grid .calendar-day__events { gap:4px; padding-top:6px; }
+.calendar-month-grid .calendar-event { padding:6px 7px; border-left-width:3px; border-radius:6px; }
 .calendar-day { min-height: 235px; padding: 0 7px 8px; border-right: 1px solid #edede8; background: #fff; }
 .calendar-day:last-child { border-right: 0; }
 .calendar-day__heading { min-height: 57px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-bottom: 1px solid #eeeeea; color: #9a9e96; font-size: 8px; text-transform: uppercase; }
@@ -1475,6 +1487,7 @@ button.activity-row:hover { background: #f7faf5; }
 .connector-metric--green > span { color:#3d9b68; background:#e7f5eb; }
 .connector-metric--gold > span { color:#c58d27; background:#fff4d8; }
 @media (max-width:600px) { .connector-dashboard__heading { flex-direction:column; gap:8px; } .connector-metrics { grid-template-columns:1fr; } .connector-card__summary { align-items:flex-start; width:100%; margin-left:52px; } }
+@media (max-width:760px) { .calendar-month-grid { min-width:720px; } .calendar-panel { overflow-x:auto; } }
 
 /* Brighter Folio palette: more colour, still calm and readable. */
 body { background: linear-gradient(135deg, #f7faf4 0%, #fbfaf5 52%, #f4f8fb 100%); }
