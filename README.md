@@ -1,19 +1,64 @@
 # Folio
 
+Folio is a calm, collaborative workspace for tasks, projects, pages, calendar planning, team activity, and Google Drive connections.
 
-## Google sign-in setup
+## What is included
 
-Google sign-in is optional. Email/password signup and guest access continue to work without Google credentials.
+- Google-only authentication with server-side sessions
+- Workspace dashboard with tasks, projects, pages, calendar, team members, and activity
+- Profile, Connectors, and Workspace Settings views
+- Optional Google Drive connector with storage quota metrics (no file sync)
+- Custom themed 404 page and responsive compact desktop layout
 
-1. In Google Cloud Console, create or select a project and configure the OAuth consent screen.
-2. Create an OAuth 2.0 Client ID of type **Web application**.
-3. Add your local and production app origins under **Authorized JavaScript origins** (for example, `http://localhost:3000`).
-4. Add the exact callback URL under **Authorized redirect URIs**:
-   - Local: `http://localhost:3000/api/auth/google/callback`
-   - Production: `https://YOUR_DOMAIN/api/auth/google/callback`
-5. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` in the deployment environment. `GOOGLE_REDIRECT_URI` must exactly match the registered callback URL.
-6. Install dependencies with `npm install`.
-7. Apply the database change to the existing PostgreSQL database by running the SQL in `drizzle/0001_add_google_auth.sql` (or apply the equivalent migration through your database migration workflow).
-8. Run `npm run typecheck` and `npm run build`.
+## Local development
 
-The OAuth callback validates the anti-CSRF state value and Google's signed ID token, requires a verified Google email, and creates or links the matching account. Existing accounts keep their current password and workspace data. A successful Google sign-in receives the same server-side session cookie used by the existing authentication system.
+```bash
+npm install
+npm run dev
+```
+
+Useful checks:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and set:
+
+```env
+DATABASE_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+GOOGLE_DRIVE_REDIRECT_URI=http://localhost:3000/api/connectors/google/callback
+DRIVE_TOKEN_ENCRYPTION_KEY=
+```
+
+`DRIVE_TOKEN_ENCRYPTION_KEY` is a private random value. Never commit it or share it publicly.
+
+## Database migrations
+
+Run these SQL migrations against the configured PostgreSQL database:
+
+1. `drizzle/0001_add_google_auth.sql`
+2. `drizzle/0002_drive_connections.sql`
+
+The Drive connector stores an encrypted refresh token and account metadata. Folio does not read or sync Drive files.
+
+## Google OAuth setup
+
+Create a Google OAuth 2.0 Web application client and add the exact origins and callback URLs:
+
+- JavaScript origin: `http://localhost:3000`
+- JavaScript origin: your production domain
+- Sign-in callback: `http://localhost:3000/api/auth/google/callback`
+- Drive callback: `http://localhost:3000/api/connectors/google/callback`
+
+For production, replace local URLs with the deployed domain. Enable the Google Drive API in the same Google Cloud project. During OAuth testing, add the Gmail under **Google Auth Platform → Audience → Test users**.
+
+## Deployment
+
+Push the `main` branch to the connected GitHub repository. Vercel builds and deploys automatically. Add all environment variables to the Vercel Production environment, then redeploy after changing them.
