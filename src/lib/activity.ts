@@ -14,6 +14,7 @@ export type ActivityType =
   | "member_removed"
   | "workspace_renamed"
   | "drive_connected"
+  | "member_role_changed"
   | "project_created"
   | "project_updated"
   | "project_shipped"

@@ -430,21 +430,25 @@ function TeamView({
   invites,
   invitesLoading,
   canManage,
+  isOwner,
   onInvite,
   onRemove,
+  onRoleChange,
 }: {
   data: WorkspaceSnapshot;
   user: SessionUser | null;
   invites: Invite[];
   invitesLoading: boolean;
   canManage: boolean;
+  isOwner: boolean;
   onInvite: () => void;
   onRemove: (member: WorkspaceMember) => void;
+  onRoleChange: (member: WorkspaceMember, role: "admin" | "member") => void;
 }) {
   return <div className="view-stack"><div className="page-heading-row"><div><p className="eyebrow"><span className="eyebrow-dot eyebrow-dot--peach" /> BETTER, TOGETHER</p><h1>Your team</h1><p className="welcome-subtitle">Good things happen when everyone has a place at the table.</p></div>{canManage && <button className="button button--primary" onClick={onInvite}><Plus size={17} /> Invite people</button>}</div>
     <section className="team-hero"><div className="team-hero__art"><span className="team-hero__sun" /><span className="team-hero__shape team-hero__shape--one" /><span className="team-hero__shape team-hero__shape--two" /><span className="team-hero__spark team-hero__spark--one">✳</span><span className="team-hero__spark team-hero__spark--two">✦</span></div><div className="team-hero__copy"><span className="eyebrow">A SHARED SPACE</span><h2>Great work feels better<br />when it’s done together.</h2><p>{data.members.length} thoughtful people, one lovely place to make things happen.</p><div className="team-hero__avatars"><AvatarStack members={data.members} limit={6} /><span>{data.members.length} teammates</span></div></div></section>
     <section className="panel members-panel"><div className="panel-heading"><div><div className="section-kicker"><span className="section-kicker__icon"><Users size={15} /></span><h2>People in {data.workspace.name}</h2></div><p className="panel-heading__sub">Shared pages, thoughtful feedback, and clear next steps.</p></div><span className="member-count-pill">{data.members.length} members</span></div>
-      {data.members.length ? <div className="member-list">{data.members.map((member) => <div className="member-row" key={member.id}><Avatar name={member.name} color={member.avatarColor} size="large" /><div className="member-row__identity"><strong>{member.name}{member.id === user?.id && <span className="you-label">You</span>}</strong><span>{member.email}</span></div><span className={`role-pill ${member.role === "owner" ? "role-pill--owner" : ""}`}>{member.role === "owner" ? <ShieldCheck size={13} /> : null}{member.role}</span><span className="member-row__presence"><span /> Active</span>{canManage && member.id !== user?.id && member.role !== "owner" && <button className="icon-button icon-button--small member-remove" onClick={() => onRemove(member)} aria-label={`Remove ${member.name}`}><MoreHorizontal size={17} /></button>}</div>)}</div> : <EmptyState icon={Users} title="Your team starts here" detail="Invite your first teammate to share this workspace." action={canManage ? <button className="button button--primary" onClick={onInvite}>Invite a teammate</button> : undefined} />}
+      {data.members.length ? <div className="member-list">{data.members.map((member) => <div className="member-row" key={member.id}><Avatar name={member.name} color={member.avatarColor} size="large" /><div className="member-row__identity"><strong>{member.name}{member.id === user?.id && <span className="you-label">You</span>}</strong><span>{member.email}</span></div>{isOwner && member.id !== user?.id && member.role !== "owner" ? <select className="member-role-select" value={member.role} onChange={(event) => onRoleChange(member, event.target.value as "admin" | "member")} aria-label={`Role for ${member.name}`}><option value="member">member</option><option value="admin">admin</option></select> : <span className={`role-pill ${member.role === "owner" ? "role-pill--owner" : ""}`}>{member.role === "owner" ? <ShieldCheck size={13} /> : null}{member.role}</span>}<span className="member-row__presence"><span /> Active</span>{canManage && member.id !== user?.id && member.role !== "owner" && <button className="icon-button icon-button--small member-remove" onClick={() => onRemove(member)} aria-label={`Remove ${member.name}`}><MoreHorizontal size={17} /></button>}</div>)}</div> : <EmptyState icon={Users} title="Your team starts here" detail="Invite your first teammate to share this workspace." action={canManage ? <button className="button button--primary" onClick={onInvite}>Invite a teammate</button> : undefined} />}
     </section>
     {canManage && <section className="panel invitations-panel"><div className="section-title"><div><Send size={16} /><h2>Invitations</h2></div><span className="muted-count">{invites.length} pending</span></div>{invitesLoading ? <div className="loading-row"><span className="loading-dot" /> Looking for invitations…</div> : invites.length ? <div className="invitation-list">{invites.map((invite) => <div className="invitation-row" key={invite.id}><span className="invitation-icon"><Send size={15} /></span><span><strong>{invite.email}</strong><small>Invited as {invite.role} · expires {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(new Date(invite.expiresAt))}</small></span><span className="invitation-status">Awaiting response</span></div>)}</div> : <p className="quiet-copy">Any open invitations will show up here.</p>}</section>}
   </div>;
@@ -683,6 +687,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
 
   const currentMember = data.members.find((member) => member.id === user?.id);
   const canManageTeam = Boolean(currentMember && ["owner", "admin"].includes(currentMember.role));
+  const isWorkspaceOwner = currentMember?.role === "owner";
   const requireAuth = useCallback(() => {
     if (authenticated && sessionReady) return true;
     setAuthMode("login"); setAuthOpen(true);
@@ -804,6 +809,13 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     catch (error) { setData((current) => ({ ...current, members: previous })); notify(error instanceof Error ? error.message : "Couldn’t update the team.", "error"); }
   };
 
+  const changeMemberRole = async (member: WorkspaceMember, role: "admin" | "member") => {
+    const previous = data.members;
+    setData((current) => ({ ...current, members: current.members.map((item) => item.id === member.id ? { ...item, role } : item) }));
+    try { await requestJson(`/api/members/${member.id}`, { method: "PATCH", body: JSON.stringify({ role }) }); notify(`${member.name} is now ${role}.`); }
+    catch (error) { setData((current) => ({ ...current, members: previous })); notify(error instanceof Error ? error.message : "Couldn’t change that role.", "error"); }
+  };
+
   const saveSettings = async (values: Pick<WorkspaceSnapshot["workspace"], "name" | "currency" | "timezone">) => {
     if (!requireAuth()) throw new Error("Sign in to update workspace settings.");
     const previous = data.workspace;
@@ -855,7 +867,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
     if (view === "profile") return <ProfileView user={user} onUpdated={setUser} />;
     if (view === "connectors") return <ConnectorsView />;
-    if (view === "team") return <TeamView data={data} user={user} invites={invites} invitesLoading={invitesLoading} canManage={canManageTeam} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onRemove={removeMember} />;
+    if (view === "team") return <TeamView data={data} user={user} invites={invites} invitesLoading={invitesLoading} canManage={canManageTeam} isOwner={isWorkspaceOwner} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onRemove={removeMember} onRoleChange={changeMemberRole} />;
     return <SettingsView data={data} onSave={saveSettings} />;
   };
 

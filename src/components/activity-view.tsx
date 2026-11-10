@@ -32,6 +32,7 @@ const META: Record<string, { icon: LucideIcon; tone: string }> = {
   member_removed: { icon: UserMinus, tone: "act--clay" },
   workspace_renamed: { icon: Building2, tone: "act--sky" },
   drive_connected: { icon: HardDrive, tone: "act--sage" },
+  member_role_changed: { icon: UserPlus, tone: "act--sky" },
   project_created: { icon: FolderKanban, tone: "act--sky" },
   project_updated: { icon: Pencil, tone: "act--sky" },
   project_shipped: { icon: CircleCheck, tone: "act--sage" },
@@ -93,6 +94,7 @@ function phrase(item: ActivityItem) {
     case "member_removed": return <> removed {item.summary ?? "a member"} from the workspace</>;
     case "workspace_renamed": return <> renamed the workspace to{s}</>;
     case "drive_connected": return <> connected Google Drive{s}</>;
+    case "member_role_changed": return <> changed a member’s role{item.detail && <em> · {item.detail}</em>}</>;
     case "project_created": return <> opened project{s}</>;
     case "project_updated": return <> updated project{s}</>;
     case "project_shipped": return <> shipped{s}</>;
