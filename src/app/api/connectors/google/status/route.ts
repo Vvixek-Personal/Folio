@@ -20,14 +20,14 @@ export async function GET() {
     oauth.setCredentials({ refresh_token: decryptDriveToken(connection.refreshTokenEncrypted) });
     const { token } = await oauth.getAccessToken();
     if (!token) throw new Error("No access token");
-    const response = await fetch("https://www.googleapis.com/drive/v3/about?fields=storageQuota", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
-    if (!response.ok) throw new Error("Drive quota request failed");
+    const response = await fetch("https://www.googleapis.com/drive/v3/about?fields=storageQuota(limit,usage)", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    if (!response.ok) throw new Error(`Drive quota request failed (${response.status})`);
     const data = await response.json() as { storageQuota?: { limit?: string; usage?: string } };
     const limit = data.storageQuota?.limit ? Number(data.storageQuota.limit) : null;
     const usage = data.storageQuota?.usage ? Number(data.storageQuota.usage) : null;
     const free = limit !== null && usage !== null ? Math.max(0, limit - usage) : null;
     return NextResponse.json({ connected: true, email: connection.email, limit, usage, free });
   } catch {
-    return NextResponse.json({ connected: true, email: connection.email, error: "Could not refresh storage right now." });
+    return NextResponse.json({ connected: true, email: connection.email, needsReconnect: true, error: "Reconnect Drive to approve storage access." });
   }
 }
