@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   target.searchParams.set("client_id", clientId);
   target.searchParams.set("redirect_uri", redirectUri);
   target.searchParams.set("response_type", "code");
-  target.searchParams.set("scope", "openid email profile https://www.googleapis.com/auth/drive.file");
+  target.searchParams.set("scope", "openid email profile https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly");
   target.searchParams.set("access_type", "offline");
   target.searchParams.set("prompt", "consent select_account");
   target.searchParams.set("state", state);

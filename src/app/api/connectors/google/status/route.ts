@@ -23,9 +23,10 @@ export async function GET() {
     const response = await fetch("https://www.googleapis.com/drive/v3/about?fields=storageQuota", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
     if (!response.ok) throw new Error("Drive quota request failed");
     const data = await response.json() as { storageQuota?: { limit?: string; usage?: string } };
-    const limit = Number(data.storageQuota?.limit ?? 0);
-    const usage = Number(data.storageQuota?.usage ?? 0);
-    return NextResponse.json({ connected: true, email: connection.email, limit, usage, free: Math.max(0, limit - usage) });
+    const limit = data.storageQuota?.limit ? Number(data.storageQuota.limit) : null;
+    const usage = data.storageQuota?.usage ? Number(data.storageQuota.usage) : null;
+    const free = limit !== null && usage !== null ? Math.max(0, limit - usage) : null;
+    return NextResponse.json({ connected: true, email: connection.email, limit, usage, free });
   } catch {
     return NextResponse.json({ connected: true, email: connection.email, error: "Could not refresh storage right now." });
   }
