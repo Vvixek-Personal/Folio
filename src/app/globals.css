@@ -489,6 +489,10 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .settings-preferences { padding:18px; }
 .settings-icon--blue { color:#4d7fc0; background:#eaf2fc; }
 .settings-icon--gold { color:#b68b37; background:#fff3d8; }
+.settings-icon--violet { color:#7d68ba; background:#f0ebff; }
+.settings-icon--green { color:#4d9669; background:#e7f5eb; }
+.settings-mini-field { margin-top:14px; }
+.settings-mini-field select { min-height:35px; }
 .settings-toggle { min-height:57px; display:flex; align-items:center; justify-content:space-between; gap:14px; border-bottom:1px solid #eef1eb; cursor:pointer; }
 .settings-toggle:last-child { border-bottom:0; }
 .settings-toggle span { display:grid; gap:4px; }
@@ -504,6 +508,20 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .settings-info-row strong { color:#5d896b; font-size:10px; font-weight:650; }
 .folio-compact .content-max { padding-top:22px; padding-bottom:14px; }
 .folio-compact .view-stack { gap:13px; }
+.folio-dark { color-scheme:dark; }
+.folio-dark body { color:#e7efe8; background:linear-gradient(135deg,#17231d,#1b242e); }
+.folio-dark .sidebar { background:#1a251e; border-color:#304238; }
+.folio-dark .main-shell, .folio-dark .content-shell { background:transparent; }
+.folio-dark .topbar { background:rgba(24,34,28,.94); border-color:#304238; }
+.folio-dark .topbar-workspace, .folio-dark .welcome-subtitle, .folio-dark .panel-heading__sub, .folio-dark .quiet-copy { color:#a9b9aa; }
+.folio-dark .topbar-current, .folio-dark .welcome-row h1, .folio-dark .page-heading-row h1, .folio-dark .panel-heading h2, .folio-dark .section-kicker h2 { color:#e5f0e5; }
+.folio-dark .panel, .folio-dark .metric-card, .folio-dark .calendar-month-grid .calendar-day { color:#dce9de; background:#202d25; border-color:#35493b; }
+.folio-dark .calendar-weekday { background:#26372c; color:#a9c0ad; }
+.folio-dark .calendar-month-grid { background:#35493b; }
+.folio-dark .settings-info-row, .folio-dark .settings-toggle { border-color:#35493b; }
+.folio-dark .settings-toggle strong, .folio-dark .settings-info-row span { color:#cbdacc; }
+.folio-dark .settings-toggle small, .folio-dark .settings-info-row strong { color:#9fbaa5; }
+.folio-dark input, .folio-dark select, .folio-dark textarea { color:#e7efe8; background:#1a251e; border-color:#405746; }
 @media (max-width:760px) { .settings-grid { grid-template-columns:1fr; } }
 .settings-panel__intro { display: flex; align-items: center; gap: 11px; padding-bottom: 17px; border-bottom: 1px solid #f0f0ec; }
 .settings-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: #6b886e; background: #eef4eb; }
