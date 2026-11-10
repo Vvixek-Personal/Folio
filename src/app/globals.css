@@ -63,7 +63,10 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .sidebar-collapse { width: 29px; height: 29px; display: grid; place-items: center; color: #a2a69f; background: transparent; border: 0; border-radius: 7px; cursor: pointer; transition: color .16s, background .16s; }
 .sidebar-collapse:hover { color: var(--ink); background: #f0f0ec; }
 .sidebar--collapsed { width: 72px; flex-basis: 72px; padding-left: 11px; padding-right: 11px; }
-.sidebar--collapsed .sidebar-brand-row { justify-content: center; padding: 0; }
+.sidebar--collapsed .sidebar-brand-row { position: relative; justify-content: center; padding: 0; }
+.sidebar--collapsed .sidebar-collapse { position: absolute; top: -6px; right: -5px; width: 20px; height: 20px; }
+.sidebar--collapsed .brand-lockup { margin: 0 auto; }
+.sidebar--collapsed .brand-mark { transform: none; }
 .sidebar--collapsed .brand-name,
 .sidebar--collapsed .workspace-switcher__copy,
 .sidebar--collapsed .workspace-switcher > svg,
@@ -1282,6 +1285,12 @@ body { color: var(--ink); font-size: 14px; }
 /* Membership-checked workspace selector and invitations */
 .workspace-switcher-wrap { position: relative; z-index: 12; }
 .workspace-switcher-wrap .workspace-switcher { margin-bottom: 19px; }
+.workspace-menu { position: fixed; left: 270px; top: 90px; width: 260px; right: auto; }
+.sidebar--collapsed .workspace-menu { left: 84px; }
+.sidebar--collapsed .workspace-switcher-wrap { display: flex; justify-content: center; }
+.sidebar--collapsed .workspace-switcher { width: 50px; height: 50px; justify-content: center; padding: 7px 0; margin-bottom: 19px; }
+.sidebar--collapsed .workspace-monogram { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
+.sidebar--collapsed .workspace-switcher > svg { display: none; }
 .workspace-menu { position: absolute; z-index: 20; top: calc(100% - 12px); left: 0; right: 0; padding: 8px; border: 1px solid #e4e9df; border-radius: 11px; background: #fffefa; box-shadow: 0 14px 35px rgba(49,63,47,.16); animation: dialog-in .16s ease; }
 .workspace-menu__heading { display: flex; align-items: center; gap: 6px; padding: 7px 6px 9px; color: #98a494; font-size: 9px; font-weight: 700; letter-spacing: .08em; }
 .workspace-menu > button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 6px; border: 0; border-radius: 7px; background: transparent; color: #7b907b; text-align: left; cursor: pointer; }
