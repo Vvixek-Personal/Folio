@@ -53,6 +53,7 @@ import {
   Trash2,
   Users,
   UserRound,
+  AppWindow,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -68,6 +69,7 @@ import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { ProfileView } from "@/components/profile-view";
 import { ConnectorsView } from "@/components/connectors-view";
 import { ActivityView, type ActivityTarget } from "@/components/activity-view";
+import { AppsView } from "@/components/apps-view";
 import { StudioBoard, StudioPulse } from "@/components/studio-board";
 import type { StudioEvent } from "@/lib/studio-types";
 import type {
@@ -81,7 +83,7 @@ import type {
   WorkspaceTask,
 } from "@/lib/types";
 
-type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "events" | "library" | "goals" | "decisions" | "rituals" | "focus" | "activity" | "team" | "settings" | "profile" | "connectors";
+type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "events" | "library" | "goals" | "decisions" | "rituals" | "focus" | "apps" | "activity" | "team" | "settings" | "profile" | "connectors";
 type TaskInput = Pick<WorkspaceTask, "title" | "description" | "status" | "priority" | "project" | "dueDate" | "assigneeId">;
 type PageInput = Pick<WorkspacePage, "title" | "icon" | "cover" | "content" | "isFavorite">;
 type Invite = { id: string; email: string; role: string; expiresAt: string; url?: string };
@@ -862,6 +864,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "decisions") return studio("decisions");
     if (view === "rituals") return studio("rituals");
     if (view === "focus") return studio("focus");
+    if (view === "apps") return <AppsView />;
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
     if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} />;
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
@@ -871,7 +874,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     return <SettingsView data={data} onSave={saveSettings} />;
   };
 
-  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", events: "Gatherings", library: "Library", goals: "Goals", decisions: "Decisions", rituals: "Rituals", focus: "Focus", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile", connectors: "Connectors" };
+  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", events: "Gatherings", library: "Library", goals: "Goals", decisions: "Decisions", rituals: "Rituals", focus: "Focus", apps: "Apps", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile", connectors: "Connectors" };
   const favoritePages = data.pages.filter((page) => page.isFavorite).slice(0, 4);
   const openCount = data.tasks.filter((task) => task.status !== "done" && (!user || task.assigneeId === user.id)).length;
 
@@ -898,6 +901,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <NavButton icon={Scale} label="Decisions" active={view === "decisions"} onClick={() => changeView("decisions")} />
           <NavButton icon={Flame} label="Rituals" active={view === "rituals"} onClick={() => changeView("rituals")} />
           <NavButton icon={Timer} label="Focus" active={view === "focus"} onClick={() => changeView("focus")} />
+          <NavButton icon={AppWindow} label="Apps" active={view === "apps"} onClick={() => changeView("apps")} />
           <NavButton icon={LayoutTemplate} label="Templates" onClick={openTemplates} />
           <NavButton icon={Users} label="Team" active={view === "team"} onClick={() => changeView("team")} />
           <span className="nav-section-label nav-section-label--spaced sidebar-favourites-heading"><span>FAVOURITES</span><button onClick={() => changeView("pages")} aria-label="Browse pages"><Plus size={14} /></button></span>
