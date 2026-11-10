@@ -31,9 +31,8 @@ export interface ActivityRecord {
  * summary captures the item's name at the moment it happened so deleted
  * items still read well in the timeline.
  */
-export function recordActivity(input: ActivityRecord) {
-  void (async () => {
-    try {
+export async function recordActivity(input: ActivityRecord) {
+  try {
       await db.insert(activity).values({
         workspaceId: input.workspaceId,
         actorId: input.actorId,
@@ -43,8 +42,7 @@ export function recordActivity(input: ActivityRecord) {
         summary: input.summary ? input.summary.slice(0, 180) : null,
         detail: input.detail ? input.detail.slice(0, 240) : null,
       });
-    } catch {
-      /* Activity is best-effort. */
-    }
-  })();
+  } catch {
+    /* Activity is best-effort. */
+  }
 }
