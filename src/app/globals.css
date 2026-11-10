@@ -1563,3 +1563,70 @@ body { background: linear-gradient(135deg, #f7faf4 0%, #fbfaf5 52%, #f4f8fb 100%
 .connector-card__quota-title { display:block; color:#536756; font-size:10px; }
 .connector-card__reconnect { min-height:28px; margin-top:8px; padding:0 10px; font-size:10px; }
 @media (max-width:600px) { .connector-card { align-items:flex-start; flex-wrap:wrap; } .connector-card .button { width:100%; } }
+
+.welcome-alt-row { display: flex; gap: 8px; }
+.welcome-alt-row .button, .welcome-alt-row .welcome__google { flex: 1; justify-content: center; min-height: 40px; }
+.welcome__secure { line-height: 1.45; }
+.form-success { margin: 0; color: #3f7a52; font-size: 12px; }
+.color-choices { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-choice { width: 28px; height: 28px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #e4e6de; cursor: pointer; }
+.color-choice--selected { box-shadow: 0 0 0 2px #4d7a58; }
+.studio-pulse { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.studio-pulse--loading { min-height: 92px; }
+.studio-pulse__card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px 18px; border: 1px solid #e4eadf; border-radius: 16px; background: #fffefa; text-align: left; cursor: pointer; }
+.studio-pulse__card:hover { border-color: #c9dccb; }
+.studio-pulse__card span { color: #7d8b7e; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+.studio-pulse__card strong { color: #2f4a39; font-size: 28px; font-weight: 600; letter-spacing: -.04em; }
+.studio-pulse__card small { color: #8b968c; font-size: 12px; }
+.studio-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #8b968c; font-size: 12px; }
+.studio-search { display: flex; align-items: center; gap: 8px; min-width: min(100%, 320px); padding: 0 12px; border: 1px solid #e6ebdf; border-radius: 12px; background: #fff; }
+.studio-search input { width: 100%; min-height: 38px; border: 0; background: transparent; }
+.studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.studio-list { display: flex; flex-direction: column; gap: 8px; }
+.studio-card { display: flex; flex-direction: column; gap: 8px; }
+.studio-card h2, .studio-row h2 { margin: 0; color: #314438; font-size: 16px; }
+.studio-card p, .studio-row p { margin: 0; color: #7d8b7e; font-size: 12.5px; line-height: 1.5; }
+.studio-card header, .studio-card footer, .studio-row { display: flex; align-items: center; gap: 8px; }
+.studio-card footer { margin-top: auto; }
+.studio-card small, .studio-row small { color: #8b968c; }
+.studio-card blockquote { margin: 0; padding-left: 10px; border-left: 2px solid #d7e3d4; color: #4e6254; font-size: 13px; }
+.studio-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; border: 0; background: transparent; color: #4d6b58; font-size: 12px; text-align: left; cursor: pointer; }
+.studio-row { display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 12px; }
+.studio-skeleton { min-height: 160px; background: linear-gradient(90deg, #f7f8f4, #eef3ea, #f7f8f4); background-size: 200% 100%; animation: folio-shimmer 1.2s infinite; }
+@keyframes folio-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.status-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border-radius: 999px; background: #f3f6f0; color: #5d6d61; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: capitalize; }
+.status-pill--active, .status-pill--reading, .status-pill--deep, .status-pill--meeting { background: #e7f3ea; color: #2f6b45; }
+.status-pill--shipped, .status-pill--done, .status-pill--decided { background: #e7eef8; color: #3d5f86; }
+.status-pill--paused, .status-pill--open, .status-pill--queued, .status-pill--scattered { background: #f8efe4; color: #8a6240; }
+.status-pill--planning, .status-pill--ritual, .status-pill--calm { background: #f3eefe; color: #65558f; }
+.status-pill--deadline, .status-pill--high { background: #fdecea; color: #8d4a42; }
+.status-pill--active { box-shadow: inset 0 0 0 1px #b7d7c2; }
+.goal-meter { height: 7px; overflow: hidden; border-radius: 99px; background: #edf1e9; }
+.goal-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6eaa7c, #6d8fba); }
+.goal-meter__row { display: flex; align-items: center; justify-content: space-between; }
+.ritual-check, .focus-minutes { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #e4eadf; border-radius: 14px; background: #f7faf4; color: #5d7a64; cursor: pointer; }
+.ritual-check--done { background: #e5f3e8; color: #2f6b45; }
+.focus-minutes { font-weight: 700; line-height: 1; }
+.focus-minutes small { font-size: 9px; font-weight: 600; }
+.streak { display: flex; align-items: center; gap: 4px; color: #8a6240; font-weight: 700; }
+.streak small { display: block; color: #a89888; font-size: 10px; font-weight: 500; }
+.studio-dialog { width: min(680px, 100%); }
+.studio-form { display: flex; flex-direction: column; gap: 12px; }
+.studio-check { display: flex; align-items: center; gap: 8px; color: #5d6d61; font-size: 12px; }
+.focus-timer { display: grid; grid-template-columns: 1.2fr auto; gap: 18px; align-items: center; }
+.focus-timer h2 { margin: 4px 0; }
+.focus-timer p { margin: 0; color: #7d8b7e; }
+.focus-timer__time { font-size: 48px; letter-spacing: -.05em; color: #2f4a39; }
+.focus-timer__controls { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.focus-timer__controls input { min-height: 36px; padding: 0 10px; border: 1px solid #e6ebdf; border-radius: 10px; background: #fff; }
+.calendar-event--gathering { background: #f4efe4; color: #6d5738; }
+.text-button--danger { color: #8d4a42; }
+@media (max-width: 900px) {
+  .studio-pulse { grid-template-columns: 1fr 1fr; }
+  .studio-row { grid-template-columns: auto 1fr auto; }
+  .focus-timer { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .welcome-alt-row, .studio-pulse { grid-template-columns: 1fr; display: grid; }
+  .welcome-alt-row { display: grid; }
+}

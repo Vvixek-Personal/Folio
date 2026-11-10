@@ -13,7 +13,21 @@ export type ActivityType =
   | "member_joined"
   | "member_removed"
   | "workspace_renamed"
-  | "drive_connected";
+  | "drive_connected"
+  | "project_created"
+  | "project_updated"
+  | "project_shipped"
+  | "event_created"
+  | "event_updated"
+  | "library_saved"
+  | "goal_created"
+  | "goal_updated"
+  | "goal_completed"
+  | "decision_logged"
+  | "ritual_created"
+  | "ritual_kept"
+  | "focus_logged"
+  | "studio_removed";
 
 export interface ActivityRecord {
   workspaceId: string;

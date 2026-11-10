@@ -53,6 +53,7 @@ export interface SessionUser {
   email: string;
   avatarColor: string;
   isGuest: boolean;
+  signedInWith?: "google" | "email" | "guest";
 }
 
 export interface TaskComment {

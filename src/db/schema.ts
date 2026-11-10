@@ -192,3 +192,131 @@ export const driveConnections = pgTable("drive_connections", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [uniqueIndex("drive_connections_user_idx").on(table.userId)]);
+
+export const projects = pgTable(
+  "projects",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    leadId: uuid("lead_id").references(() => users.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    color: text("color").notNull().default("#64987c"),
+    status: text("status").notNull().default("active"),
+    targetDate: date("target_date"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("projects_workspace_idx").on(table.workspaceId)],
+);
+
+export const studioEvents = pgTable(
+  "studio_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    notes: text("notes").notNull().default(""),
+    kind: text("kind").notNull().default("meeting"),
+    startsOn: date("starts_on").notNull(),
+    startsAt: text("starts_at"),
+    location: text("location").notNull().default(""),
+    projectName: text("project_name").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("studio_events_workspace_idx").on(table.workspaceId, table.startsOn)],
+);
+
+export const libraryItems = pgTable(
+  "library_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    url: text("url").notNull().default(""),
+    kind: text("kind").notNull().default("article"),
+    note: text("note").notNull().default(""),
+    status: text("status").notNull().default("queued"),
+    tags: text("tags").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("library_items_workspace_idx").on(table.workspaceId)],
+);
+
+export const goals = pgTable(
+  "goals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    ownerId: uuid("owner_id").references(() => users.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    detail: text("detail").notNull().default(""),
+    horizon: text("horizon").notNull().default("month"),
+    progress: integer("progress").notNull().default(0),
+    status: text("status").notNull().default("active"),
+    dueDate: date("due_date"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("goals_workspace_idx").on(table.workspaceId)],
+);
+
+export const decisions = pgTable(
+  "decisions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    context: text("context").notNull().default(""),
+    outcome: text("outcome").notNull().default(""),
+    status: text("status").notNull().default("open"),
+    projectName: text("project_name").notNull().default(""),
+    decidedOn: date("decided_on"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("decisions_workspace_idx").on(table.workspaceId)],
+);
+
+export const rituals = pgTable(
+  "rituals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    ownerId: uuid("owner_id").references(() => users.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    cadence: text("cadence").notNull().default("daily"),
+    note: text("note").notNull().default(""),
+    streak: integer("streak").notNull().default(0),
+    bestStreak: integer("best_streak").notNull().default(0),
+    lastCompletedOn: date("last_completed_on"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("rituals_workspace_idx").on(table.workspaceId)],
+);
+
+export const focusSessions = pgTable(
+  "focus_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
+    createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    minutes: integer("minutes").notNull().default(25),
+    projectName: text("project_name").notNull().default(""),
+    mood: text("mood").notNull().default("calm"),
+    note: text("note").notNull().default(""),
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("focus_sessions_workspace_idx").on(table.workspaceId)],
+);

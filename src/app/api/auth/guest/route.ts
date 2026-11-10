@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth";
 import { isEmail, rawString, readJsonBody, textField } from "@/lib/validate";
 import { ACTIVE_WORKSPACE_COOKIE } from "@/lib/workspace";
+import { seedStarterWorkspace } from "@/lib/seed";
 
 // A guest is an isolated, anonymous account with a non-guessable internal
 // identity. No password is ever exposed, and no demo records are created.
@@ -41,8 +42,9 @@ export async function POST(request: Request) {
     return { user: account, workspaceId: workspace.id };
   });
 
+  await seedStarterWorkspace(workspaceId, user.id, "friend").catch((error) => console.error("Guest starter seed failed", error));
   const token = await createSession(user.id);
-  const response = NextResponse.json({ user, token }, { status: 201 });
+  const response = NextResponse.json({ user, token, workspaceId }, { status: 201 });
   const options = sessionCookieOptions(request);
   response.cookies.set(SESSION_COOKIE, token, options);
   response.cookies.set(ACTIVE_WORKSPACE_COOKIE, workspaceId, options);

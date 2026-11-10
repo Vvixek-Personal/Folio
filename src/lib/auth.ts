@@ -75,12 +75,21 @@ async function findUserByToken(token: string): Promise<SessionUser | null> {
       email: users.email,
       avatarColor: users.avatarColor,
       isGuest: users.isGuest,
+      googleId: users.googleId,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(and(eq(sessions.tokenHash, hashSessionToken(token)), gt(sessions.expiresAt, new Date())))
     .limit(1);
-  return result ?? null;
+  if (!result) return null;
+  return {
+    id: result.id,
+    name: result.name,
+    email: result.email,
+    avatarColor: result.avatarColor,
+    isGuest: result.isGuest,
+    signedInWith: result.isGuest ? "guest" as const : result.googleId ? "google" as const : "email" as const,
+  };
 }
 
 /** Resolves a user from a raw bearer token (used when cookies are blocked). */

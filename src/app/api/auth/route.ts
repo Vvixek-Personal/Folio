@@ -16,6 +16,7 @@ import type { SessionUser } from "@/lib/types";
 import { isEmail, rawString, readJsonBody, stripFields, textField } from "@/lib/validate";
 import { ACTIVE_WORKSPACE_COOKIE } from "@/lib/workspace";
 import { recordActivity } from "@/lib/activity";
+import { DEMO_EMAIL, ensureDemoStudio, seedStarterWorkspace } from "@/lib/seed";
 
 
 const avatarColors = ["#d8d3ff", "#f2c6ae", "#d5e9d7", "#f6dfad", "#d6e7f3"];
@@ -31,7 +32,7 @@ function tokenDigest(token: string) {
  * token and sends it as a bearer token instead.
  */
 function sessionResponse(request: Request, user: SessionUser, token: string, workspaceId?: string) {
-  const response = NextResponse.json({ user, token });
+  const response = NextResponse.json({ user, token, workspaceId: workspaceId ?? null });
   const options = sessionCookieOptions(request);
   response.cookies.set(SESSION_COOKIE, token, options);
   if (workspaceId) {
@@ -46,6 +47,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Malformed request data." }, { status: 400 });
   }
   stripFields(body, PROTECTED_ACCOUNT_FIELDS);
+
+  if (rawString(body, "mode") === "demo") {
+    await ensureDemoStudio();
+    const [account] = await db.select().from(users).where(eq(users.email, DEMO_EMAIL)).limit(1);
+    if (!account) return NextResponse.json({ error: "The studio is still getting ready. Try again in a moment." }, { status: 503 });
+    const [membership] = await db.select({ id: workspaces.id }).from(workspaceMembers).innerJoin(workspaces, eq(workspaceMembers.workspaceId, workspaces.id)).where(eq(workspaceMembers.userId, account.id)).limit(1);
+    const user = { id: account.id, name: account.name, email: account.email, avatarColor: account.avatarColor, isGuest: account.isGuest, signedInWith: "email" as const };
+    return sessionResponse(request, user, await createSession(account.id), membership?.id);
+  }
 
   const mode = rawString(body, "mode") === "signup" ? "signup" : "login";
   const email = (textField(body, "email", 160) ?? "").toLowerCase();
@@ -111,6 +121,7 @@ export async function POST(request: Request) {
         return { user: newUser, workspaceId: workspace.id };
       });
       if (invitation) recordActivity({ workspaceId: invitation.workspaceId, actorId: account.user.id, type: "member_joined", targetType: "member" });
+      else await seedStarterWorkspace(account.workspaceId, account.user.id, account.user.name).catch((error) => console.error("Starter seed failed", error));
       return sessionResponse(request, account.user, await createSession(account.user.id), account.workspaceId);
     } catch (error) {
       const cause = typeof error === "object" && error !== null && "cause" in error ? error.cause : error;

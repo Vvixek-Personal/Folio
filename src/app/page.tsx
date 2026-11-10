@@ -3,6 +3,7 @@ import { Welcome } from "@/components/welcome";
 import { InvitationLanding } from "@/components/invitation-landing";
 import { getSessionUser, getSessionUserFromToken } from "@/lib/auth";
 import { ensureWorkspaceForUser, getWorkspaceSnapshot } from "@/lib/workspace";
+import { ensureDemoStudio } from "@/lib/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,9 @@ function first(value: string | string[] | undefined) {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
+  await ensureDemoStudio().catch((error) => {
+    console.error("Folio demo seed failed", error);
+  });
   const [cookieUser, params] = await Promise.all([getSessionUser(), searchParams]);
   const rawInvite = first(params.invite);
   const inviteToken = typeof rawInvite === "string" ? rawInvite.slice(0, 128) : null;

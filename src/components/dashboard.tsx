@@ -22,7 +22,9 @@ import {
   FilePlus2,
   FileText,
   Filter,
+  Flame,
   FolderKanban,
+  BookOpen,
   Globe2,
   GripVertical,
   Home,
@@ -42,8 +44,12 @@ import {
   Send,
   Settings2,
   ShieldCheck,
+  Scale,
   Sparkles,
   Star,
+  Sun,
+  Target,
+  Timer,
   Trash2,
   Users,
   UserRound,
@@ -62,6 +68,8 @@ import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { ProfileView } from "@/components/profile-view";
 import { ConnectorsView } from "@/components/connectors-view";
 import { ActivityView, type ActivityTarget } from "@/components/activity-view";
+import { StudioBoard, StudioPulse } from "@/components/studio-board";
+import type { StudioEvent } from "@/lib/studio-types";
 import type {
   SessionUser,
   TaskComment,
@@ -73,7 +81,7 @@ import type {
   WorkspaceTask,
 } from "@/lib/types";
 
-type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "activity" | "team" | "settings" | "profile" | "connectors";
+type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "events" | "library" | "goals" | "decisions" | "rituals" | "focus" | "activity" | "team" | "settings" | "profile" | "connectors";
 type TaskInput = Pick<WorkspaceTask, "title" | "description" | "status" | "priority" | "project" | "dueDate" | "assigneeId">;
 type PageInput = Pick<WorkspacePage, "title" | "icon" | "cover" | "content" | "isFavorite">;
 type Invite = { id: string; email: string; role: string; expiresAt: string; url?: string };
@@ -382,8 +390,17 @@ function ProjectsView({ tasks, onOpen, onCreate }: { tasks: WorkspaceTask[]; onO
     {projects.length ? <div className="projects-grid">{projects.map(([name, projectTasks], index) => { const done = projectTasks.filter((task) => task.status === "done").length; const color = ["#8474cf", "#de9b6a", "#64987c", "#6297b2"][index % 4]; return <section className="panel project-card" key={name}><div className="project-card__top"><span className="project-card__symbol" style={{ color, backgroundColor: `${color}18` }}><FolderKanban size={20} /></span><button className="icon-button icon-button--small" onClick={() => onOpen(projectTasks[0])} aria-label={`Open ${name}`}><ArrowUpRight size={16} /></button></div><p className="eyebrow eyebrow--muted">PROJECT</p><h2>{name}</h2><p className="project-card__summary">A shared focus for thoughtful work, decisions, and next steps.</p><div className="project-card__progress"><span><strong>{Math.round(done / projectTasks.length * 100)}%</strong> complete</span><span>{done} of {projectTasks.length} tasks</span></div><div className="project-progress project-progress--wide"><span style={{ width: `${done / projectTasks.length * 100}%`, background: color }} /></div><div className="project-card__tasks">{projectTasks.slice(0, 3).map((task) => <button key={task.id} onClick={() => onOpen(task)}><StatusMark status={task.status} /><span>{task.title}</span><ArrowRight size={13} /></button>)}</div></section>; })}</div> : <section className="panel"><EmptyState icon={FolderKanban} title="A project-shaped space" detail="Create your first task and give your team a shared focus." action={<button className="button button--primary" onClick={onCreate}><Plus size={16} /> Create your first task</button>} /></section>}</div>;
 }
 
-function CalendarView({ tasks, timezone, onOpen, onCreate }: { tasks: WorkspaceTask[]; timezone: string; onOpen: (task: WorkspaceTask) => void; onCreate: () => void }) {
+function CalendarView({ tasks, timezone, onOpen, onCreate, onCreateEvent, onOpenEvents }: { tasks: WorkspaceTask[]; timezone: string; onOpen: (task: WorkspaceTask) => void; onCreate: () => void; onCreateEvent: () => void; onOpenEvents: () => void }) {
   const [monthOffset, setMonthOffset] = useState(0);
+  const [events, setEvents] = useState<StudioEvent[]>([]);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/studio", { headers: authHeaders() })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((result) => { if (active && result?.events) setEvents(result.events); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
   const days = useMemo(() => {
     const todayParts = dateKey(new Date(), timezone).split("-").map(Number);
     const monthStart = new Date(Date.UTC(todayParts[0], todayParts[1] - 1 + monthOffset, 1));
@@ -398,12 +415,12 @@ function CalendarView({ tasks, timezone, onOpen, onCreate }: { tasks: WorkspaceT
   }, [timezone, monthOffset]);
   const title = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "UTC" }).format(days[20].date);
   const scheduled = tasks.filter((task) => task.dueDate);
-  return <div className="view-stack"><div className="page-heading-row"><div><p className="eyebrow"><span className="eyebrow-dot eyebrow-dot--blue" /> THE WEEK, AT A GLANCE</p><h1>Calendar</h1><p className="welcome-subtitle">A little perspective on what’s coming up.</p></div><button className="button button--primary" onClick={onCreate}><Plus size={17} /> New task</button></div>
+  return <div className="view-stack"><div className="page-heading-row"><div><p className="eyebrow"><span className="eyebrow-dot eyebrow-dot--blue" /> THE WEEK, AT A GLANCE</p><h1>Calendar</h1><p className="welcome-subtitle">Tasks and gatherings, in the same quiet month.</p></div><div className="welcome-actions"><button className="button button--secondary" onClick={onCreateEvent}><Sun size={16} /> Plan a gathering</button><button className="button button--primary" onClick={onCreate}><Plus size={17} /> New task</button></div></div>
     <section className="panel calendar-panel"><div className="calendar-toolbar"><div><p className="calendar-view-label">MONTH VIEW</p><h2>{title}</h2><p>{scheduled.length} scheduled {scheduled.length === 1 ? "task" : "tasks"} across all projects</p></div><div className="calendar-controls"><button className="button button--secondary button--small" onClick={() => setMonthOffset(0)}>Today</button><button className="icon-button" onClick={() => setMonthOffset((value) => value - 1)} aria-label="Previous month"><ChevronLeft size={17} /></button><button className="icon-button" onClick={() => setMonthOffset((value) => value + 1)} aria-label="Next month"><ChevronRight size={17} /></button></div></div>
-      <div className="calendar-month-grid">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => <div className="calendar-weekday" key={label}>{label}</div>)}{days.map((day) => <div className={`calendar-day ${day.inMonth ? "" : "calendar-day--outside"} ${day.key === dateKey(new Date(), timezone) ? "calendar-day--today" : ""}`} key={day.key}><div className="calendar-day__heading"><span>{day.number}</span>{day.key === dateKey(new Date(), timezone) && <b>Today</b>}</div><div className="calendar-day__events">{tasks.filter((task) => task.dueDate === day.key).map((task) => <button className={`calendar-event calendar-event--${task.status}`} key={task.id} onClick={() => onOpen(task)}><span>{task.title}</span><small>{task.project}</small></button>)}</div></div>)}</div>
-      {!scheduled.length && <div className="calendar-empty"><CalendarDays size={18} /><span>No due dates on the calendar yet.</span><button className="text-button" onClick={onCreate}>Add a task</button></div>}
+      <div className="calendar-month-grid">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => <div className="calendar-weekday" key={label}>{label}</div>)}{days.map((day) => <div className={`calendar-day ${day.inMonth ? "" : "calendar-day--outside"} ${day.key === dateKey(new Date(), timezone) ? "calendar-day--today" : ""}`} key={day.key}><div className="calendar-day__heading"><span>{day.number}</span>{day.key === dateKey(new Date(), timezone) && <b>Today</b>}</div><div className="calendar-day__events">{tasks.filter((task) => task.dueDate === day.key).map((task) => <button className={`calendar-event calendar-event--${task.status}`} key={task.id} onClick={() => onOpen(task)}><span>{task.title}</span><small>{task.project}</small></button>)}{events.filter((event) => event.startsOn === day.key).map((event) => <button className="calendar-event calendar-event--gathering" key={event.id} onClick={onOpenEvents}><span>{event.title}</span><small>{event.startsAt ? `${event.startsAt} · ` : ""}{event.kind}</small></button>)}</div></div>)}</div>
+      {!scheduled.length && !events.length && <div className="calendar-empty"><CalendarDays size={18} /><span>No due dates on the calendar yet.</span><button className="text-button" onClick={onCreate}>Add a task</button></div>}
     </section>
-    <div className="calendar-footnote"><span><Globe2 size={15} /> Calendar uses <strong>{timezone}</strong></span><span>{scheduled.length} scheduled {scheduled.length === 1 ? "task" : "tasks"} across all projects</span></div>
+    <div className="calendar-footnote"><span><Globe2 size={15} /> Calendar uses <strong>{timezone}</strong></span><span>{scheduled.length} tasks · {events.length} gatherings</span></div>
   </div>;
 }
 
@@ -588,10 +605,11 @@ function SearchDialog({ query, setQuery, pages, tasks, onClose, onPage, onTask }
 
 export function Dashboard({ initialData, initialUser, isAuthenticated: initiallyAuthenticated, initialSessionToken, initialWorkspaceId }: DashboardProps) {
   const [data, setData] = useState(initialData);
-  const [user] = useState<SessionUser | null>(initialUser);
+  const [user, setUser] = useState<SessionUser | null>(initialUser);
   const [authenticated] = useState(initiallyAuthenticated);
   const [sessionReady] = useState(true);
   const [view, setView] = useState<ViewName>("overview");
+  const [composeKind, setComposeKind] = useState<ViewName | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -807,21 +825,41 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     resumeSession();
   };
 
+  const openGathering = () => { setComposeKind("events"); changeView("events"); };
+  const studio = (kind: "projects" | "events" | "library" | "goals" | "decisions" | "rituals" | "focus") => (
+    <StudioBoard
+      kind={kind}
+      members={data.members}
+      tasks={data.tasks}
+      timezone={data.workspace.timezone}
+      startOpen={composeKind === kind}
+      onComposeHandled={() => setComposeKind(null)}
+      onOpenTask={(task) => setTaskModal(task)}
+      onCreateLinkedTask={async (projectName) => { await createTask({ title: `First step for ${projectName}`, description: "", status: "todo", priority: "medium", project: projectName, dueDate: null, assigneeId: user?.id ?? null }); }}
+    />
+  );
+
   const renderContent = () => {
-    if (view === "overview") return <HomeOverview data={data} user={user} onCreateTask={openNewTask} onCreatePage={openNewPage} onNavigate={changeView} onOpenPage={(page) => { setTemplatesInitially(false); setPageModal(page); }} onOpenTask={(task) => setTaskModal(task)} onToggleTask={(task) => updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }).catch(() => undefined)} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onActivityItem={openActivityTarget} onSeeAllActivity={() => changeView("activity")} />;
+    if (view === "overview") return <div className="view-stack"><HomeOverview data={data} user={user} onCreateTask={openNewTask} onCreatePage={openNewPage} onNavigate={changeView} onOpenPage={(page) => { setTemplatesInitially(false); setPageModal(page); }} onOpenTask={(task) => setTaskModal(task)} onToggleTask={(task) => updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }).catch(() => undefined)} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onActivityItem={openActivityTarget} onSeeAllActivity={() => changeView("activity")} /><StudioPulse timezone={data.workspace.timezone} onOpen={changeView} /></div>;
     if (view === "tasks") return <TasksView tasks={data.tasks} members={data.members} timezone={data.workspace.timezone} currentUserId={user?.id} onOpen={(task) => setTaskModal(task)} onToggle={(task) => updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }).catch(() => undefined)} onMove={(task, status) => updateTask(task.id, { status }).catch(() => undefined)} onCreate={openNewTask} />;
     if (view === "inbox") return <TasksView tasks={data.tasks.filter((task) => task.status !== "done")} members={data.members} timezone={data.workspace.timezone} currentUserId={user?.id} onOpen={(task) => setTaskModal(task)} onToggle={(task) => updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }).catch(() => undefined)} onMove={(task, status) => updateTask(task.id, { status }).catch(() => undefined)} onCreate={openNewTask} title="Your inbox" subtitle="The open work assigned to you, all in one calm place." mineOnly />;
-    if (view === "projects") return <ProjectsView tasks={data.tasks} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} />;
+    if (view === "projects") return studio("projects");
+    if (view === "events") return studio("events");
+    if (view === "library") return studio("library");
+    if (view === "goals") return studio("goals");
+    if (view === "decisions") return studio("decisions");
+    if (view === "rituals") return studio("rituals");
+    if (view === "focus") return studio("focus");
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
     if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} />;
-    if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} />;
-    if (view === "profile") return <ProfileView user={user} />;
+    if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
+    if (view === "profile") return <ProfileView user={user} onUpdated={setUser} />;
     if (view === "connectors") return <ConnectorsView />;
     if (view === "team") return <TeamView data={data} user={user} invites={invites} invitesLoading={invitesLoading} canManage={canManageTeam} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onRemove={removeMember} />;
     return <SettingsView data={data} onSave={saveSettings} />;
   };
 
-  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile", connectors: "Connectors" };
+  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", events: "Gatherings", library: "Library", goals: "Goals", decisions: "Decisions", rituals: "Rituals", focus: "Focus", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile", connectors: "Connectors" };
   const favoritePages = data.pages.filter((page) => page.isFavorite).slice(0, 4);
   const openCount = data.tasks.filter((task) => task.status !== "done" && (!user || task.assigneeId === user.id)).length;
 
@@ -842,6 +880,12 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <NavButton icon={FolderKanban} label="Projects" active={view === "projects"} onClick={() => changeView("projects")} />
           <NavButton icon={FileText} label="Pages" active={view === "pages"} onClick={() => changeView("pages")} />
           <NavButton icon={CalendarDays} label="Calendar" active={view === "calendar"} onClick={() => changeView("calendar")} />
+          <NavButton icon={Sun} label="Gatherings" active={view === "events"} onClick={() => changeView("events")} />
+          <NavButton icon={BookOpen} label="Library" active={view === "library"} onClick={() => changeView("library")} />
+          <NavButton icon={Target} label="Goals" active={view === "goals"} onClick={() => changeView("goals")} />
+          <NavButton icon={Scale} label="Decisions" active={view === "decisions"} onClick={() => changeView("decisions")} />
+          <NavButton icon={Flame} label="Rituals" active={view === "rituals"} onClick={() => changeView("rituals")} />
+          <NavButton icon={Timer} label="Focus" active={view === "focus"} onClick={() => changeView("focus")} />
           <NavButton icon={LayoutTemplate} label="Templates" onClick={openTemplates} />
           <NavButton icon={Users} label="Team" active={view === "team"} onClick={() => changeView("team")} />
           <span className="nav-section-label nav-section-label--spaced sidebar-favourites-heading"><span>FAVOURITES</span><button onClick={() => changeView("pages")} aria-label="Browse pages"><Plus size={14} /></button></span>

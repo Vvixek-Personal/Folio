@@ -44,6 +44,7 @@ Run these SQL migrations against the configured PostgreSQL database:
 
 1. `drizzle/0001_add_google_auth.sql`
 2. `drizzle/0002_drive_connections.sql`
+3. `drizzle/0003_studio.sql`
 
 The Drive connector stores an encrypted refresh token and account metadata. Folio does not read or sync Drive files.
 

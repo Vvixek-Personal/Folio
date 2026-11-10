@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Activity, Building2, CircleCheck, FilePlus2, ListPlus, MessageCircle, Pencil, RotateCcw, Trash2, UserMinus, UserPlus, HardDrive,
+  Activity, BookOpen, Building2, CircleCheck, FilePlus2, FolderKanban, HardDrive, ListPlus, MessageCircle, Pencil, RotateCcw, Scale, Sun, Target, Timer, Trash2, UserMinus, UserPlus,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -32,6 +32,20 @@ const META: Record<string, { icon: LucideIcon; tone: string }> = {
   member_removed: { icon: UserMinus, tone: "act--clay" },
   workspace_renamed: { icon: Building2, tone: "act--sky" },
   drive_connected: { icon: HardDrive, tone: "act--sage" },
+  project_created: { icon: FolderKanban, tone: "act--sky" },
+  project_updated: { icon: Pencil, tone: "act--sky" },
+  project_shipped: { icon: CircleCheck, tone: "act--sage" },
+  event_created: { icon: Activity, tone: "act--sand" },
+  event_updated: { icon: Pencil, tone: "act--sand" },
+  library_saved: { icon: BookOpen, tone: "act--sage" },
+  goal_created: { icon: Target, tone: "act--clay" },
+  goal_updated: { icon: Target, tone: "act--clay" },
+  goal_completed: { icon: CircleCheck, tone: "act--sage" },
+  decision_logged: { icon: Scale, tone: "act--sky" },
+  ritual_created: { icon: Sun, tone: "act--sand" },
+  ritual_kept: { icon: Sun, tone: "act--sage" },
+  focus_logged: { icon: Timer, tone: "act--clay" },
+  studio_removed: { icon: Trash2, tone: "act--clay" },
 };
 
 function initials(name: string) {
@@ -79,6 +93,20 @@ function phrase(item: ActivityItem) {
     case "member_removed": return <> removed {item.summary ?? "a member"} from the workspace</>;
     case "workspace_renamed": return <> renamed the workspace to{s}</>;
     case "drive_connected": return <> connected Google Drive{s}</>;
+    case "project_created": return <> opened project{s}</>;
+    case "project_updated": return <> updated project{s}</>;
+    case "project_shipped": return <> shipped{s}</>;
+    case "event_created": return <> planned{s}</>;
+    case "event_updated": return <> moved{s}</>;
+    case "library_saved": return <> saved{s} to the library</>;
+    case "goal_created": return <> set a goal{s}</>;
+    case "goal_updated": return <> updated goal{s}</>;
+    case "goal_completed": return <> completed goal{s}</>;
+    case "decision_logged": return <> logged a decision{s}</>;
+    case "ritual_created": return <> started ritual{s}</>;
+    case "ritual_kept": return <> kept{s}</>;
+    case "focus_logged": return <> finished a focus session{s}</>;
+    case "studio_removed": return <> cleared a {item.summary ?? "studio"} item</>;
     default: return <> made an update</>;
   }
 }
