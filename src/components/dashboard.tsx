@@ -814,7 +814,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     <div className={`app-shell ${sidebarCollapsed ? "app-shell--sidebar-collapsed" : ""}`}>
       {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
       <aside className={`sidebar ${mobileOpen ? "sidebar--open" : ""} ${sidebarCollapsed ? "sidebar--collapsed" : ""}`}>
-        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { setSidebarCollapsed((value) => !value); setMobileOpen(false); }} aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}><PanelLeftClose size={17} /></button></div>
+        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { if (window.innerWidth <= 820) setMobileOpen(false); else setSidebarCollapsed((value) => !value); }} aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}><PanelLeftClose size={17} /></button></div>
         <WorkspaceSwitcher id={data.workspace.id} name={data.workspace.name} />
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="nav-section-label">YOUR SPACE</span>
