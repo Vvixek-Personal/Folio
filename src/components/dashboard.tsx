@@ -45,6 +45,7 @@ import {
   Star,
   Trash2,
   Users,
+  UserRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -57,6 +58,7 @@ import { authHeaders, forgetSessionToken, rememberSessionToken, rememberWorkspac
 import { pagePlainText } from "@/lib/page-content";
 import { PageIcon } from "@/components/page-icon";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
+import { ProfileView } from "@/components/profile-view";
 import { ActivityView, type ActivityTarget } from "@/components/activity-view";
 import type {
   SessionUser,
@@ -69,7 +71,7 @@ import type {
   WorkspaceTask,
 } from "@/lib/types";
 
-type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "activity" | "team" | "settings";
+type ViewName = "overview" | "inbox" | "tasks" | "projects" | "pages" | "calendar" | "activity" | "team" | "settings" | "profile";
 type TaskInput = Pick<WorkspaceTask, "title" | "description" | "status" | "priority" | "project" | "dueDate" | "assigneeId">;
 type PageInput = Pick<WorkspacePage, "title" | "icon" | "cover" | "content" | "isFavorite">;
 type Invite = { id: string; email: string; role: string; expiresAt: string; url?: string };
@@ -802,11 +804,12 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
     if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} />;
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} />;
+    if (view === "profile") return <ProfileView user={user} />;
     if (view === "team") return <TeamView data={data} user={user} invites={invites} invitesLoading={invitesLoading} canManage={canManageTeam} onInvite={() => { if (requireAuth()) setInviteOpen(true); }} onRemove={removeMember} />;
     return <SettingsView data={data} onSave={saveSettings} />;
   };
 
-  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", activity: "Activity", team: "Team", settings: "Settings" };
+  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile" };
   const favoritePages = data.pages.filter((page) => page.isFavorite).slice(0, 4);
   const openCount = data.tasks.filter((task) => task.status !== "done" && (!user || task.assigneeId === user.id)).length;
 
@@ -832,7 +835,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <span className="nav-section-label nav-section-label--spaced sidebar-favourites-heading"><span>FAVOURITES</span><button onClick={() => changeView("pages")} aria-label="Browse pages"><Plus size={14} /></button></span>
           {favoritePages.length ? favoritePages.map((page) => <button key={page.id} className={`favorite-link ${view === "pages" ? "favorite-link--active" : ""}`} onClick={() => { changeView("pages"); setPageModal(page); }}><span><PageIcon value={page.icon} size={15} /></span><span>{page.title}</span></button>) : <button className="sidebar-empty-link" onClick={() => { changeView("pages"); openNewPage(); }}><Plus size={14} /> Add a favourite</button>}
         </nav>
-        <div className="sidebar-bottom"><div className="sidebar-timezone"><Globe2 size={14} /><span>{data.workspace.timezone}</span><span className="timezone-country">{data.workspace.currency}</span></div><button className="sidebar-settings" onClick={() => changeView("settings")}><Settings2 size={16} /><span>Workspace settings</span><ArrowRight size={14} /></button>{user?.isGuest ? <button className="sidebar-plan sidebar-plan--guest" onClick={() => setGuestSaveOpen(true)}><span className="sidebar-plan__icon"><Leaf size={16} /></span><span><strong>Make this space yours</strong><small>Save your guest workspace</small></span><ArrowUpRight size={15} /></button> : <div className="sidebar-plan"><span className="sidebar-plan__icon"><Sparkles size={15} /></span><span><strong>One shared home</strong><small>Your team is in sync.</small></span><ArrowUpRight size={15} /></div>}<div className="profile-area">{profileOpen && <div className="profile-menu"><div className="profile-menu__identity">{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest session · this browser" : user?.email ?? "Sign in to make changes"}</small></span></div><button onClick={() => { setProfileOpen(false); changeView("team"); }}><Users size={15} /> Team & members</button>{authenticated ? <button className="profile-menu__danger" onClick={signOut}><LogOut size={15} /> Sign out</button> : <button onClick={() => { setProfileOpen(false); setAuthMode("login"); setAuthOpen(true); }}><ShieldCheck size={15} /> Sign in</button>}</div>}<button className="profile-button" onClick={() => setProfileOpen((value) => !value)}>{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span className="profile-button__copy"><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest workspace" : authenticated ? "Personal workspace" : "Read-only preview"}</small></span><MoreHorizontal size={18} /></button></div></div>
+        <div className="sidebar-bottom"><div className="sidebar-timezone"><Globe2 size={14} /><span>{data.workspace.timezone}</span><span className="timezone-country">{data.workspace.currency}</span></div><button className="sidebar-settings" onClick={() => changeView("settings")}><Settings2 size={16} /><span>Workspace settings</span><ArrowRight size={14} /></button>{user?.isGuest ? <button className="sidebar-plan sidebar-plan--guest" onClick={() => setGuestSaveOpen(true)}><span className="sidebar-plan__icon"><Leaf size={16} /></span><span><strong>Make this space yours</strong><small>Save your guest workspace</small></span><ArrowUpRight size={15} /></button> : <div className="sidebar-plan"><span className="sidebar-plan__icon"><Sparkles size={15} /></span><span><strong>One shared home</strong><small>Your team is in sync.</small></span><ArrowUpRight size={15} /></div>}<div className="profile-area">{profileOpen && <div className="profile-menu"><div className="profile-menu__identity">{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest session · this browser" : user?.email ?? "Sign in to make changes"}</small></span></div><button onClick={() => { setProfileOpen(false); changeView("profile"); }}><UserRound size={15} /> Profile</button><button onClick={() => { setProfileOpen(false); changeView("team"); }}><Users size={15} /> Team & members</button>{authenticated ? <button className="profile-menu__danger" onClick={signOut}><LogOut size={15} /> Sign out</button> : <button onClick={() => { setProfileOpen(false); setAuthMode("login"); setAuthOpen(true); }}><ShieldCheck size={15} /> Sign in</button>}</div>}<button className="profile-button" onClick={() => setProfileOpen((value) => !value)}>{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span className="profile-button__copy"><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest workspace" : authenticated ? "Personal workspace" : "Read-only preview"}</small></span><MoreHorizontal size={18} /></button></div></div>
       </aside>
 
       <main className="main-shell"><header className="topbar"><div className="topbar__left"><button className="mobile-menu-button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={19} /></button><span className="topbar-workspace">{data.workspace.name}</span><ChevronRight size={14} className="breadcrumb-chevron" /><span className="topbar-current">{viewLabels[view]}</span><span className="topbar-sync"><span className={sessionReady ? "sync-dot" : "sync-dot sync-dot--loading"} />{sessionReady ? "Workspace ready" : "Opening workspace"}</span></div><div className="topbar__actions">{user?.isGuest && <button className="guest-badge" onClick={() => setGuestSaveOpen(true)}><Leaf size={14} /> Guest <span>·</span> Save workspace</button>}<button className="topbar-search" onClick={() => setSearchOpen(true)}><Search size={15} /><span>Search anything</span><kbd>⌘ K</kbd></button><button className="icon-button topbar-bell" onClick={() => changeView("activity")} aria-label="Open activity feed"><Bell size={17} />{unread > 0 ? <span className="notification-badge">{unread > 9 ? "9+" : unread}</span> : <span className="notification-dot" />}</button><span className="topbar-divider" />{user ? <button className="topbar-avatar" onClick={() => setProfileOpen((value) => !value)}><Avatar name={user.name} color={user.avatarColor} size="small" /></button> : <button className="text-button" onClick={() => { setAuthMode("login"); setAuthOpen(true); }}>Sign in</button>}</div></header>
