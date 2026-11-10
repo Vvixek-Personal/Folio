@@ -6,7 +6,6 @@ import { db } from "@/db";
 import { users, workspaceInvitations, workspaceMembers, workspaces } from "@/db/schema";
 import { createSession, hashPassword, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth";
 import { ACTIVE_WORKSPACE_COOKIE } from "@/lib/workspace";
-import { recordActivity } from "@/lib/activity";
 
 const STATE_COOKIE = "folio_google_oauth_state";
 const INVITE_COOKIE = "folio_google_oauth_invite";
@@ -97,15 +96,7 @@ export async function GET(request: Request) {
       if (!account) throw new Error("Could not resolve the Google account.");
 
       let workspaceId: string | undefined;
-      if (invitation) {
-        await tx.insert(workspaceMembers).values({
-          workspaceId: invitation.workspaceId,
-          userId: account.id,
-          role: invitation.role,
-        }).onConflictDoNothing();
-        await tx.update(workspaceInvitations).set({ acceptedAt: new Date() }).where(eq(workspaceInvitations.id, invitation.id));
-        workspaceId = invitation.workspaceId;
-      } else {
+      if (!invitation) {
         const [membership] = await tx.select({ workspaceId: workspaceMembers.workspaceId })
           .from(workspaceMembers).where(eq(workspaceMembers.userId, account.id)).limit(1);
         if (membership) workspaceId = membership.workspaceId;
@@ -121,10 +112,6 @@ export async function GET(request: Request) {
       return { account, workspaceId };
     });
 
-    if (invitation) {
-      recordActivity({ workspaceId: invitation.workspaceId, actorId: result.account.id, type: "member_joined", targetType: "member" });
-    }
-
     const session = await createSession(result.account.id);
     const response = NextResponse.redirect(new URL("/", request.url));
     const options = sessionCookieOptions(request);
@@ -135,6 +122,7 @@ export async function GET(request: Request) {
     // The app already supports this one-time token fallback when preview cookies are blocked.
     const destination = new URL("/", request.url);
     destination.searchParams.set("session", session);
+    if (inviteToken) destination.searchParams.set("invite", inviteToken);
     response.headers.set("location", destination.toString());
     return response;
   } catch (error) {

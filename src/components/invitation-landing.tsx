@@ -14,8 +14,10 @@ export function InvitationLanding({ token, user }: { token: string; user: Sessio
       const response = await fetch("/api/invitations/accept", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ token }) });
       const result = (await response.json()) as { error?: string; workspaceId?: string };
       if (!response.ok) throw new Error(result.error || "Couldn’t accept this invitation.");
-      if (typeof result.workspaceId === "string") rememberWorkspace(result.workspaceId);
-      resumeSession();
+      if (typeof result.workspaceId === "string") {
+        rememberWorkspace(result.workspaceId);
+        window.location.assign(`/?ws=${encodeURIComponent(result.workspaceId)}`);
+      } else resumeSession();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn’t accept this invitation."); setBusy(false); }
   };
   const switchAccount = async () => {
