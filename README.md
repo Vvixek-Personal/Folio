@@ -8,7 +8,6 @@ Folio is a calm, collaborative workspace for tasks, projects, pages, calendar pl
 - Workspace dashboard with tasks, projects, pages, calendar, team members, and activity
 - Profile, Connectors, and Workspace Settings views
 - Optional Google Drive connector with storage quota metrics (no file sync)
-- Custom themed 404 page and responsive compact desktop layout
 
 ## Local development
 
