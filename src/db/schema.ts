@@ -181,3 +181,14 @@ export const comments = pgTable(
   },
   (table) => [index("comments_task_idx").on(table.taskId)],
 );
+
+
+export const driveConnections = pgTable("drive_connections", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  googleAccountId: text("google_account_id").notNull(),
+  email: text("email").notNull(),
+  refreshTokenEncrypted: text("refresh_token_encrypted").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [uniqueIndex("drive_connections_user_idx").on(table.userId)]);
