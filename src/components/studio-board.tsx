@@ -10,7 +10,7 @@ type Item = StudioProject | StudioEvent | LibraryItem | StudioGoal | StudioDecis
 
 const COPY: Record<StudioKind, { eyebrow: string; title: string; subtitle: string; action: string; empty: string }> = {
   projects: { eyebrow: "SHARED FOCUS", title: "Projects", subtitle: "Name the work, give it a lead, and watch the tasks gather underneath.", action: "New project", empty: "A project is just a name your team can share." },
-  events: { eyebrow: "ON THE CALENDAR", title: "Gatherings", subtitle: "Meetings, deadlines, walks, and the hours you protect.", action: "Plan something", empty: "Nothing is on the calendar yet. A small plan is enough." },
+  events: { eyebrow: "ON THE CALENDAR", title: "Events", subtitle: "Meetings, deadlines, walks, and the hours you protect.", action: "Plan something", empty: "Nothing is on the calendar yet. A small plan is enough." },
   library: { eyebrow: "WORTH RETURNING TO", title: "Library", subtitle: "Articles, books, films, tools, and notes you do not want to lose.", action: "Save something", empty: "Save a link or a note. Future you will be grateful." },
   goals: { eyebrow: "A HORIZON", title: "Goals", subtitle: "Week, month, or quarter. Progress you can move by hand.", action: "Set a goal", empty: "Set one goal you would still care about on Friday." },
   decisions: { eyebrow: "WRITE IT DOWN", title: "Decisions", subtitle: "Context, outcome, and the date you stopped reopening it.", action: "Log a decision", empty: "The next time you decide something, leave it here." },
@@ -46,7 +46,7 @@ export function StudioPulse({ timezone, onOpen }: { timezone: string; onOpen: (v
   const cards = [
     { label: "Goals in motion", value: data.goals.filter((goal) => goal.status === "active").length, note: `${Math.round(data.goals.reduce((sum, goal) => sum + goal.progress, 0) / Math.max(1, data.goals.length))}% average`, view: "goals" as const },
     { label: "Rituals kept today", value: kept, note: `${data.rituals.length} in the practice`, view: "rituals" as const },
-    { label: "Gatherings ahead", value: upcoming, note: "Meetings and deadlines", view: "events" as const },
+    { label: "Events ahead", value: upcoming, note: "Meetings and deadlines", view: "events" as const },
     { label: "Open decisions", value: openDecisions, note: `${focusMinutes} focus minutes logged`, view: "decisions" as const },
   ];
   return (

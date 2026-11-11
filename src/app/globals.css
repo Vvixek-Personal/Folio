@@ -1657,3 +1657,55 @@ body { background: linear-gradient(135deg, #f7faf4 0%, #fbfaf5 52%, #f4f8fb 100%
 .template-shelf__grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.template-preview{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-width:0;padding:13px 12px;border:1px solid rgba(214,222,209,.92);border-radius:13px;background:rgba(255,255,255,.76);color:var(--ink);text-align:left;cursor:pointer;transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease}.template-preview:hover{transform:translateY(-2px);background:#fff;border-color:#cfdccd;box-shadow:0 9px 18px rgba(43,58,45,.07)}.template-preview__icon{display:grid;place-items:center;width:33px;height:33px;border-radius:10px}.template-preview--sage .template-preview__icon{background:#e6f1e5;color:#5e7d64}.template-preview--clay .template-preview__icon{background:#f8e9df;color:#ae7154}.template-preview--sky .template-preview__icon{background:#e6eff4;color:#648495}.template-preview--sand .template-preview__icon{background:#f6efdc;color:#9b7c3e}.template-preview strong,.template-preview small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.template-preview strong{font-size:12px}.template-preview small{margin-top:3px;color:var(--muted);font-size:10px}.template-preview>svg{color:#a4ada1}
 @media(max-width:1050px){.template-shelf__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.template-shelf{padding:16px}.template-shelf__heading{align-items:flex-start;flex-direction:column}.template-shelf__grid{grid-template-columns:1fr}.template-preview{padding:12px}.calendar-day:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Renewed tabs — new UI tab styling (enhanced clone design tokens).
+   Tabs only: sidebar navigation, topbar breadcrumb/search, favourites.
+   Page writer, icons, covers, templates, auth and all other surfaces keep their existing styles. */
+:root {
+  --folio-accent: #6c8c71;
+  --folio-accent-strong: #4d7054;
+  --folio-accent-soft: #e8f0e6;
+  --folio-surface-alt: #edf2ea;
+  --folio-text-strong: #14231b;
+  --folio-muted: #77867a;
+  --folio-faint: #a4afa5;
+  --folio-border: #e1e8dd;
+  --folio-border-strong: #cfdacd;
+}
+.sidebar { background: #f9fbf7; border-right-color: var(--folio-border); }
+.nav-section-label { color: var(--folio-faint); font-size: 10px; font-weight: 700; letter-spacing: .13em; }
+.nav-button { min-height: 39px; padding: 10px 12px; border-radius: 11px; color: var(--folio-muted); font-size: 13.5px; font-weight: 550; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.nav-button > svg { color: var(--folio-muted); }
+.nav-button:hover { background: var(--folio-surface-alt); color: var(--folio-text-strong); transform: translateX(2px); }
+.nav-button--active { background: var(--folio-accent-soft); color: var(--folio-accent-strong); font-weight: 700; }
+.nav-button--active > svg { color: var(--folio-accent-strong); }
+.nav-count { border-radius: 99px; background: var(--folio-surface-alt); color: var(--folio-muted); }
+.nav-button--active .nav-count { background: #fff; color: var(--folio-accent-strong); }
+.favorite-link { border-radius: 11px; transition: background .18s ease, color .18s ease; }
+.favorite-link:hover { background: var(--folio-surface-alt); color: var(--folio-text-strong); }
+.workspace-switcher { border-radius: 14px; background: #f9fbf7; }
+.topbar-current { color: var(--folio-text-strong); font-size: 12.5px; font-weight: 650; }
+.topbar-search { min-width: 260px; border-radius: 11px; background: #fff; transition: border-color .2s ease, box-shadow .2s ease; }
+.topbar-search:hover { border-color: var(--folio-border-strong); box-shadow: 0 5px 18px rgba(31, 52, 38, .055); }
+.sidebar--collapsed .nav-button:hover { transform: none; }
+.folio-dark .sidebar { background: #1d2620; border-right-color: #303c32; }
+.folio-dark .nav-section-label { color: #6f8073; }
+.folio-dark .nav-button { color: #93a696; }
+.folio-dark .nav-button > svg { color: #93a696; }
+.folio-dark .nav-button:hover { background: #28332b; color: #f3f7f1; }
+.folio-dark .nav-button--active { background: #293c2e; color: #a3c6a9; }
+.folio-dark .nav-button--active > svg { color: #a3c6a9; }
+.folio-dark .nav-count { background: #28332b; color: #93a696; }
+.folio-dark .nav-button--active .nav-count { background: #1d2620; color: #a3c6a9; }
+.folio-dark .favorite-link:hover { background: #28332b; color: #f3f7f1; }
+.folio-dark .workspace-switcher { background: #222c25; border-color: #303c32; }
+.folio-dark .topbar-current { color: #f3f7f1; }
+.folio-dark .topbar-search { background: #1d2620; border-color: #303c32; }
+@media (max-width: 620px) {
+  .topbar-search { min-width: 32px; }
+  .topbar-current { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-button, .favorite-link, .topbar-search { transition: none; }
+  .nav-button:hover { transform: none; }
+}

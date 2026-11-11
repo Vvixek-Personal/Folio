@@ -39,6 +39,7 @@ import {
   MoreHorizontal,
   PanelLeftClose,
   Palette,
+  Plug,
   Plus,
   Search,
   Send,
@@ -874,7 +875,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     return <SettingsView data={data} onSave={saveSettings} />;
   };
 
-  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", events: "Gatherings", library: "Library", goals: "Goals", decisions: "Decisions", rituals: "Rituals", focus: "Focus", apps: "Apps", activity: "Activity", team: "Team", settings: "Settings", profile: "Profile", connectors: "Connectors" };
+  const viewLabels: Record<ViewName, string> = { overview: "Overview", inbox: "Your inbox", tasks: "Tasks", projects: "Projects", pages: "Pages", calendar: "Calendar", events: "Events", library: "Library", goals: "Goals", decisions: "Decisions", rituals: "Rituals", focus: "Focus", apps: "Apps", activity: "Activity", team: "Members", settings: "Settings", profile: "Profile", connectors: "Connectors" };
   const favoritePages = data.pages.filter((page) => page.isFavorite).slice(0, 4);
   const openCount = data.tasks.filter((task) => task.status !== "done" && (!user || task.assigneeId === user.id)).length;
 
@@ -895,7 +896,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <NavButton icon={FolderKanban} label="Projects" active={view === "projects"} onClick={() => changeView("projects")} />
           <NavButton icon={FileText} label="Pages" active={view === "pages"} onClick={() => changeView("pages")} />
           <NavButton icon={CalendarDays} label="Calendar" active={view === "calendar"} onClick={() => changeView("calendar")} />
-          <NavButton icon={Sun} label="Gatherings" active={view === "events"} onClick={() => changeView("events")} />
+          <NavButton icon={Sun} label="Events" active={view === "events"} onClick={() => changeView("events")} />
           <NavButton icon={BookOpen} label="Library" active={view === "library"} onClick={() => changeView("library")} />
           <NavButton icon={Target} label="Goals" active={view === "goals"} onClick={() => changeView("goals")} />
           <NavButton icon={Scale} label="Decisions" active={view === "decisions"} onClick={() => changeView("decisions")} />
@@ -903,7 +904,8 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <NavButton icon={Timer} label="Focus" active={view === "focus"} onClick={() => changeView("focus")} />
           <NavButton icon={AppWindow} label="Apps" active={view === "apps"} onClick={() => changeView("apps")} />
           <NavButton icon={LayoutTemplate} label="Templates" onClick={openTemplates} />
-          <NavButton icon={Users} label="Team" active={view === "team"} onClick={() => changeView("team")} />
+          <NavButton icon={Users} label="Members" active={view === "team"} onClick={() => changeView("team")} />
+          <NavButton icon={Plug} label="Connectors" active={view === "connectors"} onClick={() => changeView("connectors")} />
           <span className="nav-section-label nav-section-label--spaced sidebar-favourites-heading"><span>FAVOURITES</span><button onClick={() => changeView("pages")} aria-label="Browse pages"><Plus size={14} /></button></span>
           {favoritePages.length ? favoritePages.map((page) => <button key={page.id} className={`favorite-link ${view === "pages" ? "favorite-link--active" : ""}`} onClick={() => { changeView("pages"); setPageModal(page); }}><span><PageIcon value={page.icon} size={15} /></span><span>{page.title}</span></button>) : <button className="sidebar-empty-link" onClick={() => { changeView("pages"); openNewPage(); }}><Plus size={14} /> Add a favourite</button>}
         </nav>
