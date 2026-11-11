@@ -866,7 +866,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "focus") return studio("focus");
     if (view === "apps") return <AppsView />;
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
-    if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} />;
+    if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} onBrowseTemplates={openTemplates} />;
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
     if (view === "profile") return <ProfileView user={user} onUpdated={setUser} />;
     if (view === "connectors") return <ConnectorsView />;
