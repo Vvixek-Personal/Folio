@@ -47,13 +47,6 @@ export function PagesView({ pages, onOpen, onCreate, onFavorite, onBrowseTemplat
         <button className="button button--primary" onClick={onCreate}><Plus size={17} /> New page</button>
       </div>
 
-      <section className="template-shelf" aria-label="Page templates">
-        <div className="template-shelf__heading"><div><span className="template-shelf__eyebrow"><Sparkles size={13} /> START WITH A LITTLE STRUCTURE</span><h2>Templates for the work ahead</h2></div>{onBrowseTemplates && <button className="text-button" onClick={onBrowseTemplates}>Browse all <ArrowRight size={14} /></button>}</div>
-        <div className="template-shelf__grid">
-          {templatePreviews.map((template) => <button className={`template-preview template-preview--${template.tone}`} key={template.title} onClick={onBrowseTemplates ?? onCreate}><span className="template-preview__icon"><PageIcon value={template.icon} size={18} /></span><span><strong>{template.title}</strong><small>{template.description}</small></span><ArrowRight size={15} /></button>)}
-        </div>
-      </section>
-
       <div className="pages-library-toolbar"><div className="pages-library-tabs"><button className={filter === "all" ? "is-active" : ""} onClick={() => setFilter("all")}>All pages <span>{pages.length}</span></button><button className={filter === "favorites" ? "is-active" : ""} onClick={() => setFilter("favorites")}><Star size={14} /> Favourites</button></div><div className="pages-library-controls"><label className="inline-search panel-search"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find a page" aria-label="Find a page" /></label><select value={sort} onChange={(event) => setSort(event.target.value as "recent" | "alphabetical")} aria-label="Sort pages"><option value="recent">Recently edited</option><option value="alphabetical">A to Z</option></select><div className="segmented-control segmented-control--view"><button className={layout === "grid" ? "is-selected" : ""} onClick={() => setLayout("grid")} aria-label="Grid view"><LayoutGrid size={15} /></button><button className={layout === "list" ? "is-selected" : ""} onClick={() => setLayout("list")} aria-label="List view"><List size={15} /></button></div></div></div>
       {visiblePages.length ? <div className={`pages-grid ${layout === "list" ? "pages-grid--list" : ""}`}>{visiblePages.map((page) => {
         const preview = pagePlainText(page.content).replace(/^#+\s*/gm, "").replace(/\s+/g, " ").trim();
