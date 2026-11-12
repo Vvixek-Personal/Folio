@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "C:/Users/Hardip/OneDrive/Desktop/Vvixek/APPs/Node.js/node-v24.16.0-win-x64/node",
+      "args": ["C:/Users/Hardip/OneDrive/Desktop/Vvixek/APPs/Node.js/node-v24.16.0-win-x64/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    },
+    "vercel": {
+      "command": "C:/Users/Hardip/OneDrive/Desktop/Vvixek/APPs/Node.js/node-v24.16.0-win-x64/node",
+      "args": ["C:/Users/Hardip/OneDrive/Desktop/Vvixek/APPs/Node.js/node-v24.16.0-win-x64/node_modules/vercel-mcp/build/index.js", "VERCEL_API_KEY=${VERCEL_TOKEN}"],
+      "env": {}
+    }
+  }
+}
