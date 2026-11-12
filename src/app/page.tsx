@@ -16,9 +16,13 @@ function first(value: string | string[] | undefined) {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  await ensureDemoStudio().catch((error) => {
-    console.error("Folio demo seed failed", error);
-  });
+  try {
+    await ensureDemoStudio().catch((error) => {
+      console.error("Folio demo seed failed", error);
+    });
+  } catch (error) {
+    console.error("Demo studio error:", error);
+  }
   const [cookieUser, params] = await Promise.all([getSessionUser(), searchParams]);
   const rawInvite = first(params.invite);
   const inviteToken = typeof rawInvite === "string" ? rawInvite.slice(0, 128) : null;

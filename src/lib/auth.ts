@@ -102,16 +102,32 @@ export async function getSessionUserFromToken(token: string | null | undefined) 
  * Preferred order: HttpOnly cookie, then an Authorization: Bearer token that
  * the client mirrors in localStorage. Both are verified against hashed,
  * expiring server-side sessions.
+ * Set DEMO_MODE=true in .env.local to bypass DB auth for preview without DB.
  */
 export async function getSessionUser() {
-  const cookieToken = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (cookieToken && TOKEN_PATTERN.test(cookieToken)) {
-    const user = await findUserByToken(cookieToken);
-    if (user) return user;
+  // Demo mode fallback - return a demo user if no DB available
+  if (process.env.DEMO_MODE === "true") {
+    return {
+      id: "demo-user-1",
+      name: "Demo User",
+      email: "demo@example.com",
+      avatarColor: "#3b82f6",
+      isGuest: true,
+      signedInWith: "guest" as const,
+    };
   }
-  const authorization = (await headers()).get("authorization");
-  if (authorization?.startsWith("Bearer ")) {
-    return findUserByToken(authorization.slice(7).trim());
+  try {
+    const cookieToken = (await cookies()).get(SESSION_COOKIE)?.value;
+    if (cookieToken && TOKEN_PATTERN.test(cookieToken)) {
+      const user = await findUserByToken(cookieToken);
+      if (user) return user;
+    }
+    const authorization = (await headers()).get("authorization");
+    if (authorization?.startsWith("Bearer ")) {
+      return findUserByToken(authorization.slice(7).trim());
+    }
+  } catch (error) {
+    console.error("getSessionUser error:", error);
   }
   return null;
 }
