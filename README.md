@@ -4,8 +4,8 @@ Folio is a calm, collaborative workspace for tasks, projects, pages, calendar pl
 
 ## What is included
 
-- Google-only authentication with server-side sessions
-- Workspace dashboard with tasks, projects, pages, calendar, team members, and activity
+- **Authentication**: Google OAuth, email/password, and guest (anonymous) accounts with server-side sessions
+- Workspace dashboard with tasks, projects, pages, calendar, team members, activity, and Studio (events, library, goals, decisions, rituals, focus sessions)
 - Profile, Connectors, and Workspace Settings views
 - Optional Google Drive connector with storage quota metrics (no file sync)
 

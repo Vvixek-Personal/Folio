@@ -1,2 +1,8 @@
 .claude/local.env
 .env.local
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Coverage
+coverage/
