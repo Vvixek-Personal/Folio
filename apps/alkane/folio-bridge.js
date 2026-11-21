@@ -75,6 +75,10 @@
     if (event.source !== window.parent || event.origin !== parentOrigin) return;
     const message = event.data;
     if (!message || typeof message !== "object") return;
+    if (message.type === "folio:ping") {
+      window.parent.postMessage({ type: "folio:alkane-ready" }, parentOrigin);
+      return;
+    }
     if (message.type === "folio:save-current-alkane") {
       const button = document.getElementById("folio-save-to-folio");
       if (button) await saveCurrentDocument(button);
@@ -199,6 +203,7 @@
     const observer = new MutationObserver(() => { showSaveButton(); installLayerDragAndDrop(); });
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener("message", handleParentMessage);
+    window.parent.postMessage({ type: "folio:alkane-ready" }, parentOrigin);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
