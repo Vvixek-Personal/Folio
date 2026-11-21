@@ -5,7 +5,7 @@ Folio is a calm, collaborative workspace for tasks, projects, pages, calendar pl
 ## What is included
 
 - **Authentication**: Google OAuth, email/password, and guest (anonymous) accounts with server-side sessions
-- Workspace dashboard with tasks, projects, pages, calendar, team members, activity, and Studio (events, library, goals, decisions, rituals, focus sessions)
+- Workspace dashboard with tasks, projects, pages, calendar, team members, activity, Studio (events, library, goals, decisions, rituals, focus sessions), and saved editable Alkane diagrams
 - Profile, Connectors, and Workspace Settings views
 - Optional Google Drive connector with storage quota metrics (no file sync)
 
@@ -45,6 +45,7 @@ Run these SQL migrations against the configured PostgreSQL database:
 1. `drizzle/0001_add_google_auth.sql`
 2. `drizzle/0002_drive_connections.sql`
 3. `drizzle/0003_studio.sql`
+4. `drizzle/0004_alkane_documents.sql`
 
 The Drive connector stores an encrypted refresh token and account metadata. Folio does not read or sync Drive files.
 
