@@ -40,6 +40,7 @@ export function AppsView() {
   const [active, setActive] = useState<Tool | null>(null);
   const [opened, setOpened] = useState(false);
   const [alkaneOpened, setAlkaneOpened] = useState(false);
+  const [alkaneReady, setAlkaneReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [savedDocuments, setSavedDocuments] = useState<SavedAlkaneDocument[]>([]);
@@ -64,6 +65,7 @@ export function AppsView() {
       if (event.origin !== window.location.origin || event.source !== iframeRef.current?.contentWindow) return;
       const data = event.data as { type?: unknown; document?: unknown; message?: unknown } | null;
       if (!data || typeof data !== "object") return;
+      if (data.type === "folio:alkane-ready") { setAlkaneReady(true); return; }
       if (data.type === "folio:alkane-error") {
         setAlkaneMessage(typeof data.message === "string" ? data.message : "Alkane could not complete that action.");
         return;
@@ -103,9 +105,11 @@ export function AppsView() {
   };
 
   const openSavedDocument = async (id: string) => {
+    if (!alkaneReady) { setAlkaneMessage("Alkane is still loading. Try again in a moment."); return; }
     setAlkaneMessage("Opening saved diagram…");
     try {
       const result = await apiJson<{ document: { id: string; title: string; data: AlkaneDocumentData } }>(`/api/apps/alkane/documents/${id}`);
+      setAlkaneReady(false);
       iframeRef.current?.contentWindow?.postMessage({ type: "folio:open-alkane-document", document: result.document.data }, window.location.origin);
       setShowSaved(false);
       setAlkaneMessage(`Opening “${result.document.title}”…`);
@@ -114,22 +118,22 @@ export function AppsView() {
 
   if (alkaneOpened) return <div className="view-stack apps-view apps-view--alkane">
     <div className="apps-alkane-toolbar">
-      <button className="apps-back-button" onClick={() => setAlkaneOpened(false)}><ArrowLeft size={15} /> All apps</button>
+      <button className="apps-back-button" onClick={() => { setAlkaneOpened(false); setAlkaneReady(false); }}><ArrowLeft size={15} /> All apps</button>
       <div className="apps-alkane-brand"><span><Network size={16} /></span><strong>Alkane</strong><small>Mind maps and diagrams</small></div>
-      <button className="apps-alkane-save" type="button" onClick={() => iframeRef.current?.contentWindow?.postMessage({ type: "folio:save-current-alkane" }, window.location.origin)}>Save to Folio</button>
+      <button className="apps-alkane-save" type="button" disabled={!alkaneReady} title={alkaneReady ? "Save the current editable diagram to Folio" : "Alkane is loading"} onClick={() => iframeRef.current?.contentWindow?.postMessage({ type: "folio:save-current-alkane" }, window.location.origin)}>Save to Folio</button>
       <div className="apps-alkane-saved-wrap">
         <button className="apps-alkane-saved" type="button" onClick={() => setShowSaved((value) => !value)}>Saved ({savedDocuments.length})</button>
-        {showSaved && <div className="apps-alkane-saved-menu">{savedDocuments.length ? savedDocuments.map((doc) => <button type="button" key={doc.id} onClick={() => void openSavedDocument(doc.id)}><strong>{doc.title}</strong><small>{new Date(doc.updatedAt).toLocaleDateString()}</small></button>) : <p>No saved diagrams yet.</p>}</div>}
+        {showSaved && <div className="apps-alkane-saved-menu">{savedDocuments.length ? savedDocuments.map((doc) => <button type="button" key={doc.id} disabled={!alkaneReady} title={alkaneReady ? `Open ${doc.title}` : "Alkane is loading"} onClick={() => void openSavedDocument(doc.id)}><strong>{doc.title}</strong><small>{new Date(doc.updatedAt).toLocaleDateString()}</small></button>) : <p>No saved diagrams yet.</p>}</div>}
       </div>
       <a className="apps-alkane-external" href="/apps/alkane/index.html" target="_blank" rel="noreferrer">Open separately <ArrowRight size={15} /></a>
     </div>
     {alkaneMessage && <p className="apps-alkane-message" role="status">{alkaneMessage}</p>}
-    <iframe ref={iframeRef} className="apps-alkane-frame" src="/apps/alkane/index.html" title="Alkane mind mapping and diagramming workspace" allow="fullscreen" allowFullScreen sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals" />
+    <iframe ref={iframeRef} className="apps-alkane-frame" src="/apps/alkane/index.html" title="Alkane mind mapping and diagramming workspace" onLoad={() => iframeRef.current?.contentWindow?.postMessage({ type: "folio:ping" }, window.location.origin)} allow="fullscreen" allowFullScreen sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals" />
   </div>;
 
   if (!opened) return <div className="view-stack apps-view">
     <div className="apps-hero panel"><div className="apps-hero__orb"><Sparkles size={24} /></div><div><span className="eyebrow">FOLIO APPS</span><h1>Your apps, inside Folio.</h1><p>Open a focused tool without another account or another history. Everything stays in your Folio workspace.</p></div></div>
-    <section className="apps-section"><div className="apps-section__heading"><div><span className="eyebrow">CONNECTED APPS</span><h2>Available in your workspace</h2></div><span>2 apps</span></div><div className="apps-launch-grid"><button className="app-launch-card" onClick={() => setOpened(true)}><span className="app-launch-card__logo">i<span>♥</span>PDF</span><span className="app-launch-card__copy"><strong>I Love PDF</strong><small>Merge, split, compress, organize and transform PDFs.</small><em>Runs privately inside Folio · no separate sign-in</em></span><ArrowRight size={19} /></button><button className="app-launch-card app-launch-card--alkane" onClick={() => { setAlkaneOpened(true); setAlkaneMessage(""); }}><span className="app-launch-card__logo"><Network size={31} strokeWidth={1.8} /></span><span className="app-launch-card__copy"><strong>Alkane</strong><small>Mind maps, diagrams and visual thinking.</small><em>Offline-first · local documents · save editable boards to Folio</em></span><ArrowRight size={19} /></button></div></section>
+    <section className="apps-section"><div className="apps-section__heading"><div><span className="eyebrow">CONNECTED APPS</span><h2>Available in your workspace</h2></div><span>2 apps</span></div><div className="apps-launch-grid"><button className="app-launch-card" onClick={() => setOpened(true)}><span className="app-launch-card__logo">i<span>♥</span>PDF</span><span className="app-launch-card__copy"><strong>I Love PDF</strong><small>Merge, split, compress, organize and transform PDFs.</small><em>Runs privately inside Folio · no separate sign-in</em></span><ArrowRight size={19} /></button><button className="app-launch-card app-launch-card--alkane" onClick={() => { setAlkaneReady(false); setAlkaneOpened(true); setAlkaneMessage(""); }}><span className="app-launch-card__logo"><Network size={31} strokeWidth={1.8} /></span><span className="app-launch-card__copy"><strong>Alkane</strong><small>Mind maps, diagrams and visual thinking.</small><em>Offline-first · local documents · save editable boards to Folio</em></span><ArrowRight size={19} /></button></div></section>
   </div>;
 
   return <div className="view-stack apps-view">
