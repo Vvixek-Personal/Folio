@@ -59,6 +59,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { Portal } from "@/components/portal";
 import { HomeOverview } from "@/components/home-overview";
 import { PageEditor } from "@/components/page-editor";
 import { PagesView } from "@/components/pages-view";
@@ -479,7 +480,7 @@ function SettingsView({ data, onSave }: { data: WorkspaceSnapshot; onSave: (valu
 }
 
 function ModalFrame({ children, onClose, className = "" }: { children: ReactNode; onClose: () => void; className?: string }) {
-  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className={`dialog ${className}`} role="dialog" aria-modal="true">{children}</section></div>;
+  return <Portal><div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className={`dialog ${className}`} role="dialog" aria-modal="true">{children}</section></div></Portal>;
 }
 
 function TaskDialog({
@@ -877,7 +878,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     <div className={`app-shell ${sidebarCollapsed ? "app-shell--sidebar-collapsed" : ""}`}>
       {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
       <aside className={`sidebar ${mobileOpen ? "sidebar--open" : ""} ${sidebarCollapsed ? "sidebar--collapsed" : ""}`}>
-        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { if (window.innerWidth <= 820) setMobileOpen(false); else setSidebarCollapsed((value) => !value); }} aria-label={window.innerWidth <= 820 ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} title={window.innerWidth <= 820 ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>{window.innerWidth <= 820 ? <X size={17} /> : sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
+        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { if (window.innerWidth <= 820) setMobileOpen(false); else setSidebarCollapsed((value) => !value); }} aria-label="Toggle navigation" title="Toggle navigation">{sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
         <WorkspaceSwitcher id={data.workspace.id} name={data.workspace.name} />
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="nav-section-label">YOUR SPACE</span>
