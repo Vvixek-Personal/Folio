@@ -622,6 +622,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const [inviteToken] = useState<string | null>(null);
   const [taskModal, setTaskModal] = useState<WorkspaceTask | "new" | null>(null);
   const [pageModal, setPageModal] = useState<WorkspacePage | "new" | null>(null);
+  const [pendingAlkaneDocumentId, setPendingAlkaneDocumentId] = useState<string | null>(null);
   const [templatesInitially, setTemplatesInitially] = useState(false);
   const [guestSaveOpen, setGuestSaveOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -629,7 +630,6 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const [invitesLoading, setInvitesLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; kind: "success" | "error" } | null>(null);
   const [unread, setUnread] = useState(0);
-  const [mobileSidebar, setMobileSidebar] = useState(true);
   const toastTimer = useMemo(() => ({ current: 0 as number }), []);
 
   const notify = useCallback((message: string, kind: "success" | "error" = "success") => {
@@ -691,6 +691,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     setAuthMode("login"); setAuthOpen(true);
     return false;
   }, [authenticated, sessionReady]);
+  const handleAlkaneDocumentHandled = useCallback(() => setPendingAlkaneDocumentId(null), []);
 
   const changeView = (next: ViewName) => { setView(next); setMobileOpen(false); setProfileOpen(false); };
   const openNewTask = () => { if (requireAuth()) setTaskModal("new"); };
@@ -706,6 +707,9 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (targetType === "page") {
       const page = data.pages.find((item) => item.id === targetId);
       if (page) { setTemplatesInitially(false); setPageModal(page); } else notify("That page no longer exists.", "error");
+    } else if (targetType === "alkane_document") {
+      setPendingAlkaneDocumentId(targetId);
+      changeView("apps");
     } else {
       const task = data.tasks.find((item) => item.id === targetId);
       if (task) setTaskModal(task); else notify("That task no longer exists.", "error");
@@ -860,7 +864,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "decisions") return studio("decisions");
     if (view === "rituals") return studio("rituals");
     if (view === "focus") return studio("focus");
-    if (view === "apps") return <AppsView />;
+    if (view === "apps") return <AppsView openDocumentId={pendingAlkaneDocumentId} onOpenDocumentHandled={handleAlkaneDocumentHandled} />;
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
     if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} onBrowseTemplates={openTemplates} />;
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
