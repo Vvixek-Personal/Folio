@@ -12,8 +12,6 @@ const nextConfig: NextConfig = {
   },
   // Standalone build for Vercel deployment
   output: "standalone",
-  // Enable SWC minify for faster builds
-  swcMinify: true,
 };
 
 export default nextConfig;
