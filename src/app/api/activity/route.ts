@@ -5,6 +5,8 @@ import { activity, users, workspaceMembers } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { getWorkspaceForUser } from "@/lib/workspace";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in to view activity." }, { status: 401 });
