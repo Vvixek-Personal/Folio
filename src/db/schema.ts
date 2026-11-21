@@ -329,9 +329,10 @@ export const alkaneDocuments = pgTable(
     workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
     createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    sourceId: text("source_id").notNull(),
     document: text("document").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("alkane_documents_workspace_updated_idx").on(table.workspaceId, table.updatedAt)],
+  (table) => [index("alkane_documents_workspace_updated_idx").on(table.workspaceId, table.updatedAt), uniqueIndex("alkane_documents_workspace_source_idx").on(table.workspaceId, table.sourceId)],
 );
