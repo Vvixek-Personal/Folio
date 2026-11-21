@@ -15,9 +15,16 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Sign in to access saved Alkane documents." }, { status: 401 });
   const workspace = await getWorkspaceForUser(user.id);
   if (!workspace) return NextResponse.json({ error: "No workspace found." }, { status: 404 });
-  const rows = await db.select({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt })
-    .from(alkaneDocuments).where(eq(alkaneDocuments.workspaceId, workspace.id)).orderBy(desc(alkaneDocuments.updatedAt));
-  return NextResponse.json({ documents: rows.map((row) => ({ ...row, updatedAt: row.updatedAt.toISOString() })) });
+  try {
+    const rows = await db.select({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt })
+      .from(alkaneDocuments).where(eq(alkaneDocuments.workspaceId, workspace.id)).orderBy(desc(alkaneDocuments.updatedAt));
+    return NextResponse.json({ documents: rows.map((row) => ({ ...row, updatedAt: row.updatedAt.toISOString() })) });
+  } catch (reason) {
+    if (reason && typeof reason === "object" && "code" in reason && reason.code === "42P01") {
+      return NextResponse.json({ error: "Alkane storage is not set up yet. Apply drizzle/0004_alkane_documents.sql to the Folio database." }, { status: 503 });
+    }
+    throw reason;
+  }
 }
 
 export async function POST(request: Request) {
@@ -42,13 +49,20 @@ export async function POST(request: Request) {
   const modelTitle = typeof model.title === "string" ? model.title.trim() : "";
   const title = (requestedTitle || modelTitle || "Untitled Alkane board").slice(0, 160);
   const now = new Date();
-  const [saved] = await db.insert(alkaneDocuments)
-    .values({ workspaceId: workspace.id, createdBy: user.id, title, sourceId, document: encoded })
-    .onConflictDoUpdate({
-      target: [alkaneDocuments.workspaceId, alkaneDocuments.sourceId],
-      set: { title, document: encoded, updatedAt: now },
-    })
-    .returning({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt });
-  recordActivity({ workspaceId: workspace.id, actorId: user.id, type: "alkane_document_saved", targetType: "alkane_document", targetId: saved.id, summary: saved.title });
-  return NextResponse.json({ document: { ...saved, updatedAt: saved.updatedAt.toISOString() } }, { status: 201 });
+  try {
+    const [saved] = await db.insert(alkaneDocuments)
+      .values({ workspaceId: workspace.id, createdBy: user.id, title, sourceId, document: encoded })
+      .onConflictDoUpdate({
+        target: [alkaneDocuments.workspaceId, alkaneDocuments.sourceId],
+        set: { title, document: encoded, updatedAt: now },
+      })
+      .returning({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt });
+    recordActivity({ workspaceId: workspace.id, actorId: user.id, type: "alkane_document_saved", targetType: "alkane_document", targetId: saved.id, summary: saved.title });
+    return NextResponse.json({ document: { ...saved, updatedAt: saved.updatedAt.toISOString() } }, { status: 201 });
+  } catch (reason) {
+    if (reason && typeof reason === "object" && "code" in reason && reason.code === "42P01") {
+      return NextResponse.json({ error: "Alkane storage is not set up yet. Apply drizzle/0004_alkane_documents.sql to the Folio database." }, { status: 503 });
+    }
+    throw reason;
+  }
 }
