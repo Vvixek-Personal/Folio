@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Download, FileArchive, FileImage, FileOutput, FileText, LockKeyhole, Merge, Network, Scissors, Sparkles, WandSparkles, X } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import { authHeaders } from "@/lib/client-auth";
@@ -36,7 +36,7 @@ const tools: { group: string; tools: Tool[] }[] = [
 
 function downloadPdf(bytes: Uint8Array, name: string) { const blob = new Blob([bytes as BlobPart], { type: "application/pdf" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = name; link.click(); URL.revokeObjectURL(url); }
 
-export function AppsView() {
+export function AppsView({ openDocumentId = null, onOpenDocumentHandled }: { openDocumentId?: string | null; onOpenDocumentHandled?: () => void } = {}) {
   const [active, setActive] = useState<Tool | null>(null);
   const [opened, setOpened] = useState(false);
   const [alkaneOpened, setAlkaneOpened] = useState(false);
@@ -105,17 +105,36 @@ export function AppsView() {
     } catch { setMessage("That file could not be read. Please choose a valid PDF."); } finally { setBusy(false); }
   };
 
-  const openSavedDocument = async (id: string) => {
+  const openSavedDocument = useCallback(async (id: string) => {
     if (!alkaneReady) { setAlkaneMessage("Alkane is still loading. Try again in a moment."); return; }
     setAlkaneMessage("Opening saved diagram…");
     try {
       const result = await apiJson<{ document: { id: string; title: string; data: AlkaneDocumentData } }>(`/api/apps/alkane/documents/${id}`);
+      const frame = iframeRef.current?.contentWindow;
+      if (!frame) throw new Error("Alkane is not ready to open this diagram.");
       setAlkaneReady(false);
-      iframeRef.current?.contentWindow?.postMessage({ type: "folio:open-alkane-document", document: result.document.data }, window.location.origin);
+      frame.postMessage({ type: "folio:open-alkane-document", document: result.document.data }, window.location.origin);
       setShowSaved(false);
       setAlkaneMessage(`Opening “${result.document.title}”…`);
-    } catch (reason) { setAlkaneMessage(reason instanceof Error ? reason.message : "Could not open this saved diagram."); }
-  };
+    } catch (reason) {
+      setAlkaneMessage(reason instanceof Error ? reason.message : "Could not open this saved diagram.");
+    }
+  }, [alkaneReady]);
+
+  useEffect(() => {
+    if (!openDocumentId) return;
+    setAlkaneReady(false);
+    setAlkaneOpened(true);
+    setAlkaneMessage("Opening saved diagram…");
+  }, [openDocumentId]);
+
+  const handledOpenId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!openDocumentId) { handledOpenId.current = null; return; }
+    if (!alkaneOpened || !alkaneReady || handledOpenId.current === openDocumentId) return;
+    handledOpenId.current = openDocumentId;
+    void openSavedDocument(openDocumentId).finally(() => onOpenDocumentHandled?.());
+  }, [openDocumentId, alkaneOpened, alkaneReady, openSavedDocument, onOpenDocumentHandled]);
 
   if (alkaneOpened) return <div className="view-stack apps-view apps-view--alkane">
     <div className="apps-alkane-toolbar">
