@@ -63,6 +63,7 @@ try {
   const bridgePath = path.join(root, "apps", "alkane", "folio-bridge.js");
   if (!existsSync(bridgePath)) throw new Error("Alkane Folio bridge is missing.");
   cpSync(bridgePath, path.join(outputDir, "folio-bridge.js"));
+  execFileSync(process.execPath, ["--check", path.join(outputDir, "folio-bridge.js")], { stdio: "inherit" });
 
   // Add stable node IDs to the layer list so the bridge can reorder the
   // actual canvas nodes through Alkane's existing context-menu actions.
@@ -75,7 +76,7 @@ try {
       else if (entry.isFile() && (entry.name.endsWith(".js") || entry.name.endsWith(".html"))) {
         const original = readFileSync(file, "utf8");
         if (original.includes(layerMarker)) {
-          const patched = original.replace(layerMarker, '`"data-layer-id":v.id,"data-layer-locked":v.locked,draggable:!v.locked,' + layerMarker);
+          const patched = original.replace(layerMarker, '"data-layer-id":v.id,"data-layer-locked":v.locked,draggable:!v.locked,' + layerMarker);
           writeFileSync(file, patched);
           patchedLayerRows += 1;
         }
@@ -89,7 +90,7 @@ try {
   const html = readFileSync(htmlPath, "utf8");
   if (!html.includes("folio-bridge.js")) {
     if (!html.includes("</body>")) throw new Error("Alkane index.html has no closing body tag.");
-    writeFileSync(htmlPath, html.replace("</body>", '  <script src="./folio-bridge.js" defer></script>\\n</body>'));
+    writeFileSync(htmlPath, html.replace("</body>", '  <script src="./folio-bridge.js" defer></script>\n</body>'));
   }
   console.log(`Alkane is ready at /apps/alkane/ (layer patch applied to ${patchedLayerRows} bundle file(s)).`);
 } finally {
