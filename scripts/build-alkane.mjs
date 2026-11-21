@@ -59,7 +59,40 @@ try {
   rmSync(outputDir, { recursive: true, force: true });
   mkdirSync(path.dirname(outputDir), { recursive: true });
   cpSync(distDir, outputDir, { recursive: true });
-  console.log("Alkane is ready at /apps/alkane/");
+
+  const bridgePath = path.join(root, "apps", "alkane", "folio-bridge.js");
+  if (!existsSync(bridgePath)) throw new Error("Alkane Folio bridge is missing.");
+  cpSync(bridgePath, path.join(outputDir, "folio-bridge.js"));
+  execFileSync(process.execPath, ["--check", path.join(outputDir, "folio-bridge.js")], { stdio: "inherit" });
+
+  // Add stable node IDs to the layer list so the bridge can reorder the
+  // actual canvas nodes through Alkane's existing context-menu actions.
+  let patchedLayerRows = 0;
+  const layerMarker = 'className:`layer-row ${t.includes(v.id)?"selected":""} ${v.hidden?"muted":""}`,onContextMenu:';
+  const visitOutput = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) visitOutput(file);
+      else if (entry.isFile() && (entry.name.endsWith(".js") || entry.name.endsWith(".html"))) {
+        const original = readFileSync(file, "utf8");
+        if (original.includes(layerMarker)) {
+          const patched = original.replace(layerMarker, '"data-layer-id":v.id,"data-layer-locked":v.locked,draggable:!v.locked,' + layerMarker);
+          writeFileSync(file, patched);
+          patchedLayerRows += 1;
+        }
+      }
+    }
+  };
+  visitOutput(outputDir);
+  if (!patchedLayerRows) throw new Error("Could not locate Alkane's layer list in the built output; drag-to-reorder was not installed.");
+
+  const htmlPath = path.join(outputDir, "index.html");
+  const html = readFileSync(htmlPath, "utf8");
+  if (!html.includes("folio-bridge.js")) {
+    if (!html.includes("</body>")) throw new Error("Alkane index.html has no closing body tag.");
+    writeFileSync(htmlPath, html.replace("</body>", '  <script src="./folio-bridge.js" defer></script>\n</body>'));
+  }
+  console.log(`Alkane is ready at /apps/alkane/ (layer patch applied to ${patchedLayerRows} bundle file(s)).`);
 } finally {
   rmSync(buildDir, { recursive: true, force: true });
 }

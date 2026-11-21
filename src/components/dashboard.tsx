@@ -59,6 +59,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { Portal } from "@/components/portal";
 import { HomeOverview } from "@/components/home-overview";
 import { PageEditor } from "@/components/page-editor";
 import { PagesView } from "@/components/pages-view";
@@ -479,7 +480,7 @@ function SettingsView({ data, onSave }: { data: WorkspaceSnapshot; onSave: (valu
 }
 
 function ModalFrame({ children, onClose, className = "" }: { children: ReactNode; onClose: () => void; className?: string }) {
-  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className={`dialog ${className}`} role="dialog" aria-modal="true">{children}</section></div>;
+  return <Portal><div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className={`dialog ${className}`} role="dialog" aria-modal="true">{children}</section></div></Portal>;
 }
 
 function TaskDialog({
@@ -621,6 +622,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const [inviteToken] = useState<string | null>(null);
   const [taskModal, setTaskModal] = useState<WorkspaceTask | "new" | null>(null);
   const [pageModal, setPageModal] = useState<WorkspacePage | "new" | null>(null);
+  const [pendingAlkaneDocumentId, setPendingAlkaneDocumentId] = useState<string | null>(null);
   const [templatesInitially, setTemplatesInitially] = useState(false);
   const [guestSaveOpen, setGuestSaveOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -628,7 +630,6 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   const [invitesLoading, setInvitesLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; kind: "success" | "error" } | null>(null);
   const [unread, setUnread] = useState(0);
-  const [mobileSidebar, setMobileSidebar] = useState(true);
   const toastTimer = useMemo(() => ({ current: 0 as number }), []);
 
   const notify = useCallback((message: string, kind: "success" | "error" = "success") => {
@@ -651,7 +652,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); setSearchOpen(true); }
-      if (event.key === "Escape") { setSearchOpen(false); setAuthOpen(false); setInviteOpen(false); setTaskModal(null); setGuestSaveOpen(false); setProfileOpen(false); }
+      if (event.key === "Escape") { setSearchOpen(false); setAuthOpen(false); setInviteOpen(false); setTaskModal(null); setGuestSaveOpen(false); setProfileOpen(false); setMobileOpen(false); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -690,6 +691,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     setAuthMode("login"); setAuthOpen(true);
     return false;
   }, [authenticated, sessionReady]);
+  const handleAlkaneDocumentHandled = useCallback(() => setPendingAlkaneDocumentId(null), []);
 
   const changeView = (next: ViewName) => { setView(next); setMobileOpen(false); setProfileOpen(false); };
   const openNewTask = () => { if (requireAuth()) setTaskModal("new"); };
@@ -705,6 +707,9 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (targetType === "page") {
       const page = data.pages.find((item) => item.id === targetId);
       if (page) { setTemplatesInitially(false); setPageModal(page); } else notify("That page no longer exists.", "error");
+    } else if (targetType === "alkane_document") {
+      setPendingAlkaneDocumentId(targetId);
+      changeView("apps");
     } else {
       const task = data.tasks.find((item) => item.id === targetId);
       if (task) setTaskModal(task); else notify("That task no longer exists.", "error");
@@ -859,7 +864,7 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
     if (view === "decisions") return studio("decisions");
     if (view === "rituals") return studio("rituals");
     if (view === "focus") return studio("focus");
-    if (view === "apps") return <AppsView />;
+    if (view === "apps") return <AppsView openDocumentId={pendingAlkaneDocumentId} onOpenDocumentHandled={handleAlkaneDocumentHandled} />;
     if (view === "activity") return <ActivityView onOpenTarget={openActivityTarget} onOpened={() => setUnread(0)} />;
     if (view === "pages") return <PagesView pages={data.pages} onOpen={(page) => setPageModal(page)} onCreate={openNewPage} onFavorite={toggleFavorite} onBrowseTemplates={openTemplates} />;
     if (view === "calendar") return <CalendarView tasks={data.tasks} timezone={data.workspace.timezone} onOpen={(task) => setTaskModal(task)} onCreate={openNewTask} onCreateEvent={openGathering} onOpenEvents={() => changeView("events")} />;
@@ -876,14 +881,14 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
   return (
     <div className={`app-shell ${sidebarCollapsed ? "app-shell--sidebar-collapsed" : ""}`}>
       {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
-      <aside className={`sidebar ${mobileOpen ? "sidebar--open" : ""} ${sidebarCollapsed ? "sidebar--collapsed" : ""}`}>
-        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" onClick={() => { if (window.innerWidth <= 820) setMobileOpen(false); else setSidebarCollapsed((value) => !value); }} aria-label={window.innerWidth <= 820 ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} title={window.innerWidth <= 820 ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>{window.innerWidth <= 820 ? <X size={17} /> : sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
+      <aside id="app-sidebar" className={`sidebar ${mobileOpen ? "sidebar--open" : ""} ${sidebarCollapsed ? "sidebar--collapsed" : ""}`}>
+        <div className="sidebar-brand-row"><button className="brand-lockup" onClick={() => changeView("overview")} aria-label="Folio home"><span className="brand-mark"><span /><span /><span /><span /></span><span className="brand-name">folio<span className="brand-period">.</span></span></button><button className="sidebar-collapse" type="button" onClick={() => { if (mobileOpen) setMobileOpen(false); else setSidebarCollapsed((value) => !value); }} aria-label={mobileOpen ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} title={mobileOpen ? "Close navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={mobileOpen || !sidebarCollapsed} aria-controls="app-sidebar">{mobileOpen ? <X size={17} /> : sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
         <WorkspaceSwitcher id={data.workspace.id} name={data.workspace.name} />
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="nav-section-label">YOUR SPACE</span>
           <NavButton icon={LayoutDashboard} label="Overview" active={view === "overview"} onClick={() => changeView("overview")} />
           <NavButton icon={Inbox} label="Your inbox" active={view === "inbox"} count={openCount || undefined} onClick={() => changeView("inbox")} />
-          <NavButton icon={Search} label="Quick find" shortcut="⌘ K" onClick={() => setSearchOpen(true)} />
+          <NavButton icon={Search} label="Quick find" shortcut="⌘ K" onClick={() => { setMobileOpen(false); setSearchOpen(true); }} />
           <NavButton icon={Activity} label="Activity" active={view === "activity"} onClick={() => changeView("activity")} />
           <span className="nav-section-label nav-section-label--spaced">THE WORK</span>
           <NavButton icon={CheckCheck} label="Tasks" active={view === "tasks"} count={data.tasks.filter((task) => task.status !== "done").length || undefined} onClick={() => changeView("tasks")} />
@@ -900,12 +905,12 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
           <NavButton icon={LayoutTemplate} label="Templates" onClick={openTemplates} />
           <NavButton icon={Users} label="Team" active={view === "team"} onClick={() => changeView("team")} />
           <span className="nav-section-label nav-section-label--spaced sidebar-favourites-heading"><span>FAVOURITES</span><button onClick={() => changeView("pages")} aria-label="Browse pages"><Plus size={14} /></button></span>
-          {favoritePages.length ? favoritePages.map((page) => <button key={page.id} className={`favorite-link ${view === "pages" ? "favorite-link--active" : ""}`} onClick={() => { changeView("pages"); setPageModal(page); }}><span><PageIcon value={page.icon} size={15} /></span><span>{page.title}</span></button>) : <button className="sidebar-empty-link" onClick={() => { changeView("pages"); openNewPage(); }}><Plus size={14} /> Add a favourite</button>}
+          {favoritePages.length ? favoritePages.map((page) => <button key={page.id} type="button" title={page.title} aria-label={`Open favourite page ${page.title}`} className={`favorite-link ${view === "pages" ? "favorite-link--active" : ""}`} onClick={() => { changeView("pages"); setPageModal(page); }}><span><PageIcon value={page.icon} size={15} /></span><span>{page.title}</span></button>) : <button className="sidebar-empty-link" onClick={() => { changeView("pages"); openNewPage(); }}><Plus size={14} /> Add a favourite</button>}
         </nav>
-        <div className="sidebar-bottom"><div className="sidebar-timezone"><Globe2 size={14} /><span>{data.workspace.timezone}</span><span className="timezone-country">{data.workspace.currency}</span></div><button className="sidebar-settings" onClick={() => changeView("settings")}><Settings2 size={16} /><span>Workspace settings</span><ArrowRight size={14} /></button>{user?.isGuest ? <button className="sidebar-plan sidebar-plan--guest" onClick={() => setGuestSaveOpen(true)}><span className="sidebar-plan__icon"><Leaf size={16} /></span><span><strong>Make this space yours</strong><small>Save your guest workspace</small></span><ArrowUpRight size={15} /></button> : <div className="sidebar-plan"><span className="sidebar-plan__icon"><Sparkles size={15} /></span><span><strong>One shared home</strong><small>Your team is in sync.</small></span><ArrowUpRight size={15} /></div>}<div className="profile-area">{profileOpen && <div className="profile-menu"><div className="profile-menu__identity">{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest session · this browser" : user?.email ?? "Sign in to make changes"}</small></span></div><button onClick={() => { setProfileOpen(false); changeView("profile"); }}><UserRound size={15} /> Profile</button><button onClick={() => { setProfileOpen(false); changeView("connectors"); }}><Settings2 size={15} /> Connectors</button><button onClick={() => { setProfileOpen(false); changeView("team"); }}><Users size={15} /> Team & members</button>{authenticated ? <button className="profile-menu__danger" onClick={signOut}><LogOut size={15} /> Sign out</button> : <button onClick={() => { setProfileOpen(false); setAuthMode("login"); setAuthOpen(true); }}><ShieldCheck size={15} /> Sign in</button>}</div>}<button className="profile-button" onClick={() => setProfileOpen((value) => !value)}>{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span className="profile-button__copy"><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest workspace" : authenticated ? "Personal workspace" : "Read-only preview"}</small></span><MoreHorizontal size={18} /></button></div></div>
+        <div className="sidebar-bottom"><div className="sidebar-timezone" title={`${data.workspace.timezone} · ${data.workspace.currency}`}><Globe2 size={14} /><span>{data.workspace.timezone}</span><span className="timezone-country">{data.workspace.currency}</span></div><button className="sidebar-settings" type="button" aria-label="Workspace settings" title="Workspace settings" onClick={() => changeView("settings")}><Settings2 size={16} /><span>Workspace settings</span><ArrowRight size={14} /></button>{user?.isGuest ? <button className="sidebar-plan sidebar-plan--guest" onClick={() => setGuestSaveOpen(true)}><span className="sidebar-plan__icon"><Leaf size={16} /></span><span><strong>Make this space yours</strong><small>Save your guest workspace</small></span><ArrowUpRight size={15} /></button> : <div className="sidebar-plan"><span className="sidebar-plan__icon"><Sparkles size={15} /></span><span><strong>One shared home</strong><small>Your team is in sync.</small></span><ArrowUpRight size={15} /></div>}<div className="profile-area">{profileOpen && <div className="profile-menu"><div className="profile-menu__identity">{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest session · this browser" : user?.email ?? "Sign in to make changes"}</small></span></div><button onClick={() => { setProfileOpen(false); changeView("profile"); }}><UserRound size={15} /> Profile</button><button onClick={() => { setProfileOpen(false); changeView("connectors"); }}><Settings2 size={15} /> Connectors</button><button onClick={() => { setProfileOpen(false); changeView("team"); }}><Users size={15} /> Team & members</button>{authenticated ? <button className="profile-menu__danger" onClick={signOut}><LogOut size={15} /> Sign out</button> : <button onClick={() => { setProfileOpen(false); setAuthMode("login"); setAuthOpen(true); }}><ShieldCheck size={15} /> Sign in</button>}</div>}<button className="profile-button" type="button" aria-label="Open profile menu" title="Open profile menu" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)}>{user ? <Avatar name={user.name} color={user.avatarColor} /> : <span className="profile-placeholder">?</span>}<span className="profile-button__copy"><strong>{user?.name ?? "Signed out"}</strong><small>{user?.isGuest ? "Guest workspace" : authenticated ? "Personal workspace" : "Read-only preview"}</small></span><MoreHorizontal size={18} /></button></div></div>
       </aside>
 
-      <main className="main-shell"><header className="topbar"><div className="topbar__left"><button className="mobile-menu-button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={19} /></button><span className="topbar-workspace">{data.workspace.name}</span><ChevronRight size={14} className="breadcrumb-chevron" /><span className="topbar-current">{viewLabels[view]}</span><span className="topbar-sync"><span className={sessionReady ? "sync-dot" : "sync-dot sync-dot--loading"} />{sessionReady ? "Workspace ready" : "Opening workspace"}</span></div><div className="topbar__actions">{user?.isGuest && <button className="guest-badge" onClick={() => setGuestSaveOpen(true)}><Leaf size={14} /> Guest <span>·</span> Save workspace</button>}<button className="topbar-search" onClick={() => setSearchOpen(true)}><Search size={15} /><span>Search anything</span><kbd>⌘ K</kbd></button><button className="icon-button topbar-bell" onClick={() => changeView("activity")} aria-label="Open activity feed"><Bell size={17} />{unread > 0 ? <span className="notification-badge">{unread > 9 ? "9+" : unread}</span> : <span className="notification-dot" />}</button><span className="topbar-divider" />{user ? <button className="topbar-avatar" onClick={() => setProfileOpen((value) => !value)}><Avatar name={user.name} color={user.avatarColor} size="small" /></button> : <button className="text-button" onClick={() => { setAuthMode("login"); setAuthOpen(true); }}>Sign in</button>}</div></header>
+      <main className="main-shell"><header className="topbar"><div className="topbar__left"><button className="mobile-menu-button" type="button" onClick={() => setMobileOpen(true)} aria-label="Open navigation" aria-controls="app-sidebar" aria-expanded={mobileOpen}><Menu size={19} /></button><span className="topbar-workspace">{data.workspace.name}</span><ChevronRight size={14} className="breadcrumb-chevron" /><span className="topbar-current">{viewLabels[view]}</span><span className="topbar-sync"><span className={sessionReady ? "sync-dot" : "sync-dot sync-dot--loading"} />{sessionReady ? "Workspace ready" : "Opening workspace"}</span></div><div className="topbar__actions">{user?.isGuest && <button className="guest-badge" onClick={() => setGuestSaveOpen(true)}><Leaf size={14} /> Guest <span>·</span> Save workspace</button>}<button className="topbar-search" onClick={() => setSearchOpen(true)}><Search size={15} /><span>Search anything</span><kbd>⌘ K</kbd></button><button className="icon-button topbar-bell" onClick={() => changeView("activity")} aria-label="Open activity feed"><Bell size={17} />{unread > 0 ? <span className="notification-badge">{unread > 9 ? "9+" : unread}</span> : <span className="notification-dot" />}</button><span className="topbar-divider" />{user ? <button className="topbar-avatar" onClick={() => setProfileOpen((value) => !value)}><Avatar name={user.name} color={user.avatarColor} size="small" /></button> : <button className="text-button" onClick={() => { setAuthMode("login"); setAuthOpen(true); }}>Sign in</button>}</div></header>
         <div className="content-shell"><div className="content-max" key={view}>{renderContent()}</div><footer className="app-footer"><span>Made for people doing good work.</span><span><span className="footer-dot" /> Private team workspace <span className="footer-divider">·</span> {data.workspace.currency} · {data.workspace.timezone}</span></footer></div>
       </main>
 
@@ -922,5 +927,5 @@ export function Dashboard({ initialData, initialUser, isAuthenticated: initially
 }
 
 function NavButton({ icon: Icon, label, active = false, count, shortcut, onClick }: { icon: LucideIcon; label: string; active?: boolean; count?: number; shortcut?: string; onClick: () => void }) {
-  return <button className={`nav-button ${active ? "nav-button--active" : ""}`} onClick={onClick}><Icon size={17} strokeWidth={1.8} /><span>{label}</span>{count !== undefined && <span className="nav-count">{count}</span>}{shortcut && <kbd>{shortcut}</kbd>}</button>;
+  return <button className={`nav-button ${active ? "nav-button--active" : ""}`} type="button" aria-label={label} title={label} onClick={onClick}><Icon size={17} strokeWidth={1.8} /><span>{label}</span>{count !== undefined && <span className="nav-count">{count}</span>}{shortcut && <kbd>{shortcut}</kbd>}</button>;
 }

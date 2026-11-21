@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  Activity, BookOpen, Building2, CircleCheck, FilePlus2, FolderKanban, HardDrive, ListPlus, MessageCircle, Pencil, RotateCcw, Scale, Sun, Target, Timer, Trash2, UserMinus, UserPlus,
+  Activity, BookOpen, Building2, CircleCheck, FilePlus2, FolderKanban, HardDrive, Layers3, ListPlus, MessageCircle, Pencil, RotateCcw, Scale, Sun, Target, Timer, Trash2, UserMinus, UserPlus,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-export type ActivityTarget = "page" | "task" | null;
+export type ActivityTarget = "page" | "task" | "alkane_document" | null;
 
 export interface ActivityItem {
   id: string;
@@ -47,6 +47,7 @@ const META: Record<string, { icon: LucideIcon; tone: string }> = {
   ritual_kept: { icon: Sun, tone: "act--sage" },
   focus_logged: { icon: Timer, tone: "act--clay" },
   studio_removed: { icon: Trash2, tone: "act--clay" },
+  alkane_document_saved: { icon: Layers3, tone: "act--sky" },
 };
 
 function initials(name: string) {
@@ -109,6 +110,7 @@ function phrase(item: ActivityItem) {
     case "ritual_kept": return <> kept{s}</>;
     case "focus_logged": return <> finished a focus session{s}</>;
     case "studio_removed": return <> cleared a {item.summary ?? "studio"} item</>;
+    case "alkane_document_saved": return <> saved an editable diagram{s}</>;
     default: return <> made an update</>;
   }
 }

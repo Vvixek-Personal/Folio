@@ -28,13 +28,14 @@ export type ActivityType =
   | "ritual_created"
   | "ritual_kept"
   | "focus_logged"
-  | "studio_removed";
+  | "studio_removed"
+  | "alkane_document_saved";
 
 export interface ActivityRecord {
   workspaceId: string;
   actorId: string;
   type: ActivityType;
-  targetType?: "page" | "task" | "member" | "workspace" | null;
+  targetType?: "page" | "task" | "member" | "workspace" | "alkane_document" | null;
   targetId?: string | null;
   summary?: string | null;
   detail?: string | null;
