@@ -363,6 +363,7 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
     requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify(pendingSession) })
       .then(() => {
         if (!active) return;
+        setSaving(false);
         setError("");
         setSaved(true);
         setPendingSession(null);
@@ -371,11 +372,11 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
       })
       .catch((reason) => {
         if (active) {
+          setSaving(false);
           setSaved(false);
           setError(reason instanceof Error ? reason.message : "Couldn't save the completed focus session.");
         }
-      })
-      .finally(() => { if (active) setSaving(false); });
+      });
     return () => { active = false; };
   }, [attempt, pendingSession]);
   const display = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`;
