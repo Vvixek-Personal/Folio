@@ -1711,3 +1711,13 @@ body{background:var(--canvas)}
 .apps-alkane-external:hover{color:var(--green)}
 .apps-alkane-frame{width:100%;height:100%;min-height:0;flex:1;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
 @media(max-width:700px){.apps-launch-grid{grid-template-columns:1fr}.apps-view--alkane{height:calc(100vh - 105px);min-height:520px}.apps-alkane-toolbar{gap:8px;flex-wrap:wrap}.apps-alkane-brand small{display:none}}
+
+/* Viewport-level dialogs are portalled to body; keep every popup inside the usable frame. */
+.modal-backdrop,.apps-modal-backdrop{position:fixed;z-index:200;inset:0;display:grid;place-items:center;overflow-y:auto;overscroll-behavior:contain;padding:clamp(12px,3vw,28px);}
+.dialog{width:min(100%,680px);max-height:min(88vh,850px);max-height:min(88dvh,850px);min-width:0;overscroll-behavior:contain;}
+.studio-dialog{width:min(680px,100%);}
+.apps-modal-backdrop{z-index:210;}
+.focus-timer__status{margin-top:8px!important;color:#5b7b60!important;font-size:11px!important;}
+.focus-timer__error{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px;padding:9px 11px;border-radius:9px;background:#fff4f1;color:#9b5147;font-size:11px;}
+.studio-pulse__error{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--muted);font-size:12px;}
+@media(max-width:640px){.modal-backdrop,.apps-modal-backdrop{padding:12px;align-items:center}.dialog{max-height:calc(100dvh - 24px);padding:16px}.studio-dialog{width:100%}.task-form-grid{grid-template-columns:1fr}.task-form-grid .form-field:last-child{grid-column:auto}.studio-pulse__error{align-items:flex-start;flex-direction:column}}
