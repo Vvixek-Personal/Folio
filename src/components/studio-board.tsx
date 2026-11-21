@@ -2,6 +2,7 @@
 
 import { ArrowUpRight, BookOpen, Check, Flame, FolderKanban, Pause, Play, Plus, Scale, Search, Sun, Target, Timer, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { Portal } from "@/components/portal";
 import { authHeaders } from "@/lib/client-auth";
 import type { FocusSession, LibraryItem, StudioDecision, StudioEvent, StudioGoal, StudioKind, StudioProject, StudioRitual, StudioSnapshot } from "@/lib/studio-types";
 import type { WorkspaceMember, WorkspaceTask } from "@/lib/types";
@@ -32,12 +33,21 @@ function todayKey(timezone: string) {
 
 export function StudioPulse({ timezone, onOpen }: { timezone: string; onOpen: (view: "goals" | "rituals" | "events" | "decisions" | "focus") => void }) {
   const [data, setData] = useState<StudioSnapshot | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true;
-    requestJson<StudioSnapshot>("/api/studio").then((result) => { if (active) setData(result); }).catch(() => { if (active) setData(null); });
+    setLoading(true);
+    setLoadError("");
+    requestJson<StudioSnapshot>("/api/studio")
+      .then((result) => { if (active) setData(result); })
+      .catch((reason) => { if (active) { setData(null); setLoadError(reason instanceof Error ? reason.message : "Couldn't load your workspace overview."); } })
+      .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
-  if (!data) return <div className="studio-pulse studio-pulse--loading">{[0, 1, 2, 3].map((index) => <div className="activity-skeleton" key={index} />)}</div>;
+  }, [retry]);
+  if (loading) return <div className="studio-pulse studio-pulse--loading">{[0, 1, 2, 3].map((index) => <div className="activity-skeleton" key={index} />)}</div>;
+  if (loadError || !data) return <div className="studio-pulse__error" role="alert"><span>{loadError || "Your workspace overview is unavailable."}</span><button className="text-button" type="button" onClick={() => setRetry((value) => value + 1)}>Try again</button></div>;
   const today = todayKey(timezone);
   const kept = data.rituals.filter((ritual) => ritual.lastCompletedOn === today).length;
   const upcoming = data.events.filter((event) => event.startsOn >= today).length;
@@ -85,12 +95,15 @@ export function StudioBoard({
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<Item | "new" | null>(null);
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const copy = COPY[kind];
 
   const load = () => {
+    setItems(null);
+    setLoadError("");
     requestJson<StudioSnapshot>("/api/studio")
       .then((result) => setItems(result[kind]))
-      .catch((reason) => { setItems([]); setError(reason instanceof Error ? reason.message : "Couldn’t load this collection."); });
+      .catch((reason) => { setItems([]); setLoadError(reason instanceof Error ? reason.message : "Couldn't load this collection."); });
   };
   useEffect(() => { load(); }, [kind]);
   useEffect(() => { if (startOpen) { setEditing("new"); onComposeHandled?.(); } }, [startOpen, onComposeHandled]);
@@ -149,7 +162,8 @@ export function StudioBoard({
         <span>{items === null ? "Loading…" : `${visible.length} ${visible.length === 1 ? "item" : "items"}`}</span>
       </div>
       {error && <p className="form-error">{error}</p>}
-      {items === null ? <div className="studio-grid">{[0, 1, 2].map((index) => <div className="panel studio-skeleton" key={index} />)}</div>
+      {loadError ? <section className="panel empty-state" role="alert"><span className="empty-state__icon">{iconFor(kind)}</span><h3>Couldn't load {copy.title.toLowerCase()}</h3><p>{loadError}</p><button className="button button--secondary" type="button" onClick={load}>Try again</button></section>
+        : items === null ? <div className="studio-grid">{[0, 1, 2].map((index) => <div className="panel studio-skeleton" key={index} />)}</div>
         : visible.length === 0 ? <section className="panel empty-state"><span className="empty-state__icon">{iconFor(kind)}</span><h3>{query ? "Nothing matches" : `Nothing in ${copy.title.toLowerCase()} yet`}</h3><p>{query ? "Try another word." : copy.empty}</p><button className="button button--primary" onClick={() => setEditing("new")}><Plus size={15} /> {copy.action}</button></section>
         : <div className={kind === "rituals" || kind === "focus" ? "studio-list" : "studio-grid"}>{visible.map((item) => <StudioCard key={item.id} kind={kind} item={item} tasks={tasks} timezone={timezone} onOpen={() => setEditing(item)} onDelete={() => remove(item.id)} onToggleRitual={toggleRitual} onOpenTask={onOpenTask} onNudgeGoal={(goal, progress) => save({ progress, status: progress >= 100 ? "done" : "active" }, goal.id).catch((reason) => setError(reason instanceof Error ? reason.message : "Couldn’t update progress."))} />)}</div>}
       {editing && <StudioDialog kind={kind} item={editing === "new" ? undefined : editing} members={members} timezone={timezone} onClose={() => setEditing(null)} onSave={save} onDelete={editing !== "new" ? () => remove(editing.id).then(() => setEditing(null)) : undefined} />}
@@ -230,7 +244,7 @@ function StudioDialog({ kind, item, members, timezone, onClose, onSave, onDelete
     return current == null ? fallback : String(current);
   };
   return (
-    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <Portal><div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="dialog studio-dialog" role="dialog" aria-modal="true">
         <div className="dialog-topline"><span>{item ? "EDIT" : "NEW"}</span><button className="icon-button" onClick={onClose} aria-label="Close"><X size={16} /></button></div>
         <form onSubmit={submit} className="studio-form">
@@ -308,7 +322,7 @@ function StudioDialog({ kind, item, members, timezone, onClose, onSave, onDelete
           <div className="dialog-footer">{onDelete && <button className="button button--danger-quiet" type="button" onClick={() => void onDelete()}><Trash2 size={14} /> Delete</button>}<div className="dialog-footer__right"><button className="button button--secondary" type="button" onClick={onClose}>Cancel</button><button className="button button--primary" disabled={busy}>{busy ? "Saving" : item ? "Save changes" : "Create"}</button></div></div>
         </form>
       </section>
-    </div>
+    </div></Portal>
   );
 }
 
@@ -318,30 +332,42 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
   const [running, setRunning] = useState(false);
   const [title, setTitle] = useState("Deep work");
   const [projectName, setProjectName] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
   const logged = useMemo(() => ({ current: onLogged }), [onLogged]);
   logged.current = onLogged;
   useEffect(() => {
     if (!running) return;
-    const timer = window.setInterval(() => {
-      setRemaining((value) => (value <= 1 ? 0 : value - 1));
-    }, 1000);
+    const timer = window.setInterval(() => setRemaining((value) => (value <= 1 ? 0 : value - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [running]);
   useEffect(() => {
     if (remaining !== 0 || !running) return;
     setRunning(false);
-    void requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify({ title: title || "Focus session", minutes, projectName, mood: "deep", note: "Finished with the timer." }) }).then(() => logged.current());
-  }, [remaining, running, title, minutes, projectName, logged]);
+    setAttempt((value) => value + 1);
+  }, [remaining, running]);
+  useEffect(() => {
+    if (!attempt) return;
+    let active = true;
+    setSaving(true);
+    requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify({ title: title || "Focus session", minutes, projectName, mood: "deep", note: "Finished with the timer." }) })
+      .then(() => { if (active) { setError(""); setSaved(true); logged.current(); } })
+      .catch((reason) => { if (active) { setSaved(false); setError(reason instanceof Error ? reason.message : "Couldn't save the completed focus session."); } })
+      .finally(() => { if (active) setSaving(false); });
+    return () => { active = false; };
+  }, [attempt, title, minutes, projectName, logged]);
   const display = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`;
   return (
     <section className="panel focus-timer">
-      <div><p className="eyebrow"><span className="eyebrow-dot" /> A PROTECTED HOUR</p><h2>Focus timer</h2><p>When it ends, Folio logs the session. You can also log one by hand.</p></div>
+      <div><p className="eyebrow"><span className="eyebrow-dot" /> A PROTECTED HOUR</p><h2>Focus timer</h2><p>When it ends, Folio logs the session. You can also log one by hand.</p>{saving && <p className="focus-timer__status" role="status">Saving your session…</p>}{saved && <p className="focus-timer__status" role="status">Session saved to Folio.</p>}{error && <div className="focus-timer__error" role="alert"><span>{error}</span><button type="button" className="text-button" onClick={() => setAttempt((value) => value + 1)} disabled={saving}>Retry save</button></div>}</div>
       <strong className="focus-timer__time">{display}</strong>
       <div className="focus-timer__controls">
-        {[25, 45, 50].map((value) => <button key={value} className={`status-pill ${minutes === value ? "status-pill--active" : ""}`} type="button" onClick={() => { setMinutes(value); setRemaining(value * 60); setRunning(false); }}>{value}m</button>)}
+        {[25, 45, 50].map((value) => <button key={value} className={`status-pill ${minutes === value ? "status-pill--active" : ""}`} type="button" onClick={() => { setMinutes(value); setRemaining(value * 60); setRunning(false); setError(""); setSaved(false); }}>{value}m</button>)}
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="What are you making?" />
         <input value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="Project" />
-        <button className="button button--primary" type="button" onClick={() => { if (!running && remaining === 0) setRemaining(minutes * 60); setRunning((value) => !value); }}>{running ? <><Pause size={15} /> Pause</> : <><Play size={15} /> {remaining === 0 ? "Restart" : "Start"}</>}</button>
+        <button className="button button--primary" type="button" disabled={saving} onClick={() => { if (!running && remaining === 0) { setRemaining(minutes * 60); setSaved(false); setError(""); } setRunning((value) => !value); }}>{running ? <><Pause size={15} /> Pause</> : <><Play size={15} /> {remaining === 0 ? "Restart" : "Start"}</>}</button>
       </div>
     </section>
   );
