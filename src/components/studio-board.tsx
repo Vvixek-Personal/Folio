@@ -353,7 +353,7 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
     let active = true;
     setSaving(true);
     requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify({ title: title || "Focus session", minutes, projectName, mood: "deep", note: "Finished with the timer." }) })
-      .then(() => { if (active) { setError(""); setSaved(true); logged.current(); } })
+      .then(() => { if (active) { setError(""); setSaved(true); setAttempt(0); logged.current(); } })
       .catch((reason) => { if (active) { setSaved(false); setError(reason instanceof Error ? reason.message : "Couldn't save the completed focus session."); } })
       .finally(() => { if (active) setSaving(false); });
     return () => { active = false; };
