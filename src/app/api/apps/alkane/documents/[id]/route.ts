@@ -14,6 +14,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const workspace = await getWorkspaceForUser(user.id);
   if (!workspace) return NextResponse.json({ error: "No workspace found." }, { status: 404 });
   const { id } = await context.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Saved Alkane document not found." }, { status: 404 });
   const [row] = await db.select().from(alkaneDocuments).where(and(eq(alkaneDocuments.id, id), eq(alkaneDocuments.workspaceId, workspace.id))).limit(1);
   if (!row) return NextResponse.json({ error: "Saved Alkane document not found." }, { status: 404 });
   let document: unknown;
