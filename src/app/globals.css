@@ -718,19 +718,19 @@ button:disabled { cursor: not-allowed; opacity: .65; }
   .sidebar--collapsed .sidebar-collapse { position: static; width: 29px; height: 29px; }
   .sidebar--collapsed .brand-lockup { margin: 0; }
   .sidebar--collapsed .brand-name,
-  .sidebar--collapsed .workspace-switcher__copy,
   .sidebar--collapsed .workspace-switcher > svg,
-  .sidebar--collapsed .nav-section-label,
   .sidebar--collapsed .nav-button > span,
   .sidebar--collapsed .nav-button > kbd,
   .sidebar--collapsed .favorite-link > span:last-child,
-  .sidebar--collapsed .sidebar-empty-link,
   .sidebar--collapsed .sidebar-timezone > span,
   .sidebar--collapsed .sidebar-settings > span,
   .sidebar--collapsed .sidebar-settings > svg:last-child,
-  .sidebar--collapsed .sidebar-plan,
-  .sidebar--collapsed .profile-button__copy,
-  .sidebar--collapsed .profile-button > svg { display: initial; }
+  .sidebar--collapsed .profile-button > svg { display: inline; }
+  .sidebar--collapsed .workspace-switcher__copy,
+  .sidebar--collapsed .profile-button__copy { display: grid; }
+  .sidebar--collapsed .nav-section-label,
+  .sidebar--collapsed .sidebar-empty-link { display: flex; }
+  .sidebar--collapsed .sidebar-plan { display: flex; }
   .sidebar--collapsed .workspace-switcher { justify-content: flex-start; padding: 9px; width: 100%; height: auto; }
   .sidebar--collapsed .nav-button { justify-content: flex-start; padding: 0 10px; }
   .sidebar--collapsed .nav-button > svg { margin: initial; }
