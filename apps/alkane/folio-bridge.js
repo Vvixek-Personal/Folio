@@ -100,7 +100,7 @@
           throw new Error("Unsupported saved document format.");
         }
         db = await openLocalDatabase();
-        const id = crypto.randomUUID();
+        const id = typeof documentData.id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(documentData.id) ? documentData.id : crypto.randomUUID();
         const copy = { ...documentData, id, title: typeof documentData.title === "string" ? documentData.title : "Saved Folio diagram", modifiedAt: new Date().toISOString() };
         await new Promise((resolve, reject) => {
           const transaction = db.transaction("documents", "readwrite");
