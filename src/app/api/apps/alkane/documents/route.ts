@@ -1,4 +1,5 @@
 import { desc, eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { alkaneDocuments } from "@/db/schema";
@@ -33,12 +34,21 @@ export async function POST(request: Request) {
   if (model.schemaVersion !== 1 || !Array.isArray(model.boards) || model.boards.length < 1 || model.boards.length > 100 || typeof model.activeBoardId !== "string") {
     return NextResponse.json({ error: "This Alkane document format is not supported." }, { status: 400 });
   }
-  const encoded = JSON.stringify(document);
+  const sourceId = typeof model.id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(model.id) ? model.id : randomUUID();
+  const normalizedDocument = { ...model, id: sourceId };
+  const encoded = JSON.stringify(normalizedDocument);
   if (new TextEncoder().encode(encoded).byteLength > MAX_DOCUMENT_BYTES) return NextResponse.json({ error: "This diagram is too large to save to Folio (1.5 MB limit)." }, { status: 413 });
   const requestedTitle = typeof input.title === "string" ? input.title.trim() : "";
   const modelTitle = typeof model.title === "string" ? model.title.trim() : "";
   const title = (requestedTitle || modelTitle || "Untitled Alkane board").slice(0, 160);
-  const [saved] = await db.insert(alkaneDocuments).values({ workspaceId: workspace.id, createdBy: user.id, title, document: encoded }).returning({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt });
+  const now = new Date();
+  const [saved] = await db.insert(alkaneDocuments)
+    .values({ workspaceId: workspace.id, createdBy: user.id, title, sourceId, document: encoded })
+    .onConflictDoUpdate({
+      target: [alkaneDocuments.workspaceId, alkaneDocuments.sourceId],
+      set: { title, document: encoded, updatedAt: now },
+    })
+    .returning({ id: alkaneDocuments.id, title: alkaneDocuments.title, updatedAt: alkaneDocuments.updatedAt });
   recordActivity({ workspaceId: workspace.id, actorId: user.id, type: "alkane_document_saved", targetType: "alkane_document", targetId: saved.id, summary: saved.title });
   return NextResponse.json({ document: { ...saved, updatedAt: saved.updatedAt.toISOString() } }, { status: 201 });
 }
