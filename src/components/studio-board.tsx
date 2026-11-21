@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, BookOpen, Check, Flame, FolderKanban, Pause, Play, Plus, Scale, Search, Sun, Target, Timer, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Portal } from "@/components/portal";
 import { authHeaders } from "@/lib/client-auth";
 import type { FocusSession, LibraryItem, StudioDecision, StudioEvent, StudioGoal, StudioKind, StudioProject, StudioRitual, StudioSnapshot } from "@/lib/studio-types";
@@ -333,10 +333,11 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
   const [title, setTitle] = useState("Deep work");
   const [projectName, setProjectName] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [pendingSession, setPendingSession] = useState<{ title: string; minutes: number; projectName: string; mood: string; note: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
-  const logged = useMemo(() => ({ current: onLogged }), [onLogged]);
+  const logged = useRef(onLogged);
   logged.current = onLogged;
   useEffect(() => {
     if (!running) return;
@@ -346,28 +347,47 @@ function FocusTimer({ onLogged }: { onLogged: () => void }) {
   useEffect(() => {
     if (remaining !== 0 || !running) return;
     setRunning(false);
+    setPendingSession({
+      title: title.trim() || "Focus session",
+      minutes,
+      projectName: projectName.trim(),
+      mood: "deep",
+      note: "Finished with the timer.",
+    });
     setAttempt((value) => value + 1);
-  }, [remaining, running]);
+  }, [remaining, running, title, minutes, projectName]);
   useEffect(() => {
-    if (!attempt) return;
+    if (!attempt || !pendingSession) return;
     let active = true;
     setSaving(true);
-    requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify({ title: title || "Focus session", minutes, projectName, mood: "deep", note: "Finished with the timer." }) })
-      .then(() => { if (active) { setError(""); setSaved(true); setAttempt(0); logged.current(); } })
-      .catch((reason) => { if (active) { setSaved(false); setError(reason instanceof Error ? reason.message : "Couldn't save the completed focus session."); } })
+    requestJson("/api/studio/focus", { method: "POST", body: JSON.stringify(pendingSession) })
+      .then(() => {
+        if (!active) return;
+        setError("");
+        setSaved(true);
+        setPendingSession(null);
+        setAttempt(0);
+        logged.current();
+      })
+      .catch((reason) => {
+        if (active) {
+          setSaved(false);
+          setError(reason instanceof Error ? reason.message : "Couldn't save the completed focus session.");
+        }
+      })
       .finally(() => { if (active) setSaving(false); });
     return () => { active = false; };
-  }, [attempt, title, minutes, projectName, logged]);
+  }, [attempt, pendingSession]);
   const display = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`;
   return (
     <section className="panel focus-timer">
       <div><p className="eyebrow"><span className="eyebrow-dot" /> A PROTECTED HOUR</p><h2>Focus timer</h2><p>When it ends, Folio logs the session. You can also log one by hand.</p>{saving && <p className="focus-timer__status" role="status">Saving your session…</p>}{saved && <p className="focus-timer__status" role="status">Session saved to Folio.</p>}{error && <div className="focus-timer__error" role="alert"><span>{error}</span><button type="button" className="text-button" onClick={() => setAttempt((value) => value + 1)} disabled={saving}>Retry save</button></div>}</div>
       <strong className="focus-timer__time">{display}</strong>
       <div className="focus-timer__controls">
-        {[25, 45, 50].map((value) => <button key={value} className={`status-pill ${minutes === value ? "status-pill--active" : ""}`} type="button" onClick={() => { setMinutes(value); setRemaining(value * 60); setRunning(false); setError(""); setSaved(false); }}>{value}m</button>)}
+        {[25, 45, 50].map((value) => <button key={value} className={`status-pill ${minutes === value ? "status-pill--active" : ""}`} type="button" disabled={Boolean(pendingSession)} onClick={() => { setMinutes(value); setRemaining(value * 60); setRunning(false); setError(""); setSaved(false); }}>{value}m</button>)}
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="What are you making?" />
         <input value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="Project" />
-        <button className="button button--primary" type="button" disabled={saving} onClick={() => { if (!running && remaining === 0) { setRemaining(minutes * 60); setSaved(false); setError(""); } setRunning((value) => !value); }}>{running ? <><Pause size={15} /> Pause</> : <><Play size={15} /> {remaining === 0 ? "Restart" : "Start"}</>}</button>
+        <button className="button button--primary" type="button" disabled={saving || Boolean(pendingSession)} onClick={() => { if (!running && remaining === 0) { setRemaining(minutes * 60); setSaved(false); setError(""); } setRunning((value) => !value); }}>{running ? <><Pause size={15} /> Pause</> : <><Play size={15} /> {remaining === 0 ? "Restart" : "Start"}</>}</button>
       </div>
     </section>
   );
