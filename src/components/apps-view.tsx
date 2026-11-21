@@ -88,6 +88,7 @@ export function AppsView() {
       }
     };
     window.addEventListener("message", receive);
+    iframeRef.current?.contentWindow?.postMessage({ type: "folio:ping" }, window.location.origin);
     return () => { activeListener = false; window.removeEventListener("message", receive); };
   }, [alkaneOpened]);
 
